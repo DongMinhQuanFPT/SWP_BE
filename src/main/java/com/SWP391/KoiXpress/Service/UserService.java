@@ -108,7 +108,7 @@ public class UserService {
     public CreateUserByManagerResponse create(CreateUserByManagerRequest createUserByManagerRequest) {
         Users users = modelMapper.map(createUserByManagerRequest, Users.class);
         try {
-            String originPassword = users.getPassword();
+            String originPassword = createUserByManagerRequest.getPassword();
             users.setPassword(passwordEncoder.encode(originPassword));
             users.setRole(createUserByManagerRequest.getRole());
             Users newUsers = userRepository.save(users);
