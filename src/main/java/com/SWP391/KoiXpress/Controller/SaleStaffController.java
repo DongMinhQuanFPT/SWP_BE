@@ -1,4 +1,4 @@
-package com.SWP391.KoiXpress.Api;
+package com.SWP391.KoiXpress.Controller;
 
 import com.SWP391.KoiXpress.Model.request.Order.UpdateOrderRequest;
 import com.SWP391.KoiXpress.Model.response.Order.UpdateOrderResponse;

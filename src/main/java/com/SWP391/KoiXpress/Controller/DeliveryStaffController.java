@@ -1,4 +1,4 @@
-package com.SWP391.KoiXpress.Api;
+package com.SWP391.KoiXpress.Controller;
 
 import com.SWP391.KoiXpress.Model.request.Order.UpdateOrderRequest;
 import com.SWP391.KoiXpress.Model.request.Progress.ProgressRequest;
@@ -17,7 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/delivery")

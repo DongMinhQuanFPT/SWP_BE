@@ -158,19 +158,18 @@ public class OrderService {
         orders.setTotalVolume(totalVolume);
         orders.setTotalQuantity(totalQuantityFish);
         orderRepository.save(orders);
-        double calculateDistancePrice = orders.calculateDistancePrice();
+//        double calculateDistancePrice = orders.calculateDistancePrice();
         double calculatePrice = orders.calculatePrice();
         orders.setTotalPrice(calculatePrice);
         orderRepository.save(orders);
-        CreateOrderResponse createOrderResponse = modelMapper.map(orders, CreateOrderResponse.class);
-        createOrderResponse.setPriceDistance(calculateDistancePrice);
-        return createOrderResponse;
+        return modelMapper.map(orders, CreateOrderResponse.class);
+//        createOrderResponse.setPriceDistance(calculateDistancePrice);
     }
 
 
     public String orderPaymentUrl(long orderId) throws Exception {
         Orders orders = orderRepository.findOrdersById(orderId);
-        if (orders.getOrderStatus() == OrderStatus.ACCEPTED) {
+        if (orders.getOrderStatus() == OrderStatus.AWAITING_PAYMENT) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime createDate = LocalDateTime.now();
             String formattedCreateDate = createDate.format(formatter);
@@ -266,6 +265,8 @@ public class OrderService {
 
 
         payments.setTransactions(setTransaction);
+        orders.setOrderStatus(OrderStatus.PAID);
+        orderRepository.save(orders);
         userRepository.save(customer);
         paymentRepository.save(payments);
     }
@@ -288,8 +289,19 @@ public class OrderService {
     public List<AllOrderByCurrentResponse> getAllOrdersByCurrentUser() {
         Users users = authenticationService.getCurrentUser();
         List<Orders> orders = orderRepository.findOrdersByUsers(users);
+
         return orders.stream()
-                .map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class))
+                .map(order -> {
+                    AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
+
+                    double distancePrice = order.calculateDistancePrice();
+                    double discountPrice = order.calculateDiscountPrice();
+                    response.setDistancePrice(distancePrice);
+                    response.setDiscountPrice(discountPrice);
+
+
+                    return response;
+                })
                 .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED)
                 .sorted(Comparator.comparing(AllOrderByCurrentResponse::getOrderDate))
                 .collect(Collectors.toList());

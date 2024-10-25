@@ -121,4 +121,10 @@ public class Orders {
         }
         throw new OrderException("Method transport is not selected");
     }
+    public double calculateDiscountPrice(){
+        if(methodTransPort!=null){
+            return totalPrice*describeOrder.getDiscount();
+        }
+        throw new OrderException("Method transport is not selected");
+    }
 }

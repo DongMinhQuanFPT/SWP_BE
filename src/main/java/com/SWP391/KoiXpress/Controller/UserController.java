@@ -1,4 +1,4 @@
-package com.SWP391.KoiXpress.Api;
+package com.SWP391.KoiXpress.Controller;
 
 import com.SWP391.KoiXpress.Model.request.User.UpdateCustomerRequest;
 import com.SWP391.KoiXpress.Model.response.Order.AllOrderByCurrentResponse;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/api/user")
 @CrossOrigin("*")
 @SecurityRequirement(name="api")
-@PreAuthorize("hasAuthority('CUSTOMER','MANAGER','SALE_STAFF','DELIVERING_STAFF')")
+@PreAuthorize("hasAuthority('CUSTOMER') or hasAuthority('SALE_STAFF') or hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF')")
 public class UserController {
 
 

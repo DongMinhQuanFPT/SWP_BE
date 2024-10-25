@@ -8,10 +8,12 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 @Configuration
 public class AppConfig {
+
     @Bean
     public RestTemplate restTemplate(){
         return new RestTemplate();
     }
+
     @Bean
     public ClassLoaderTemplateResolver templateResolver() {
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
