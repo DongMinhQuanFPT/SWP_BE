@@ -29,7 +29,6 @@ public class CreateOrderResponse {
     double totalDistance;
     double totalVolume;
 
-    double priceDistance;
     double totalPrice;
     String recipientInfo;
     String customerNotes;

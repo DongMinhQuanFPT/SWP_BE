@@ -15,27 +15,45 @@ import java.util.UUID;
 @Data
 public class AllOrderByCurrentResponse {
     long id;
+
     UUID trackingOrder = UUID.randomUUID();
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date orderDate;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date deliveryDate;
 
     String originLocation;
+
     String nearWareHouse;
+
     String destinationLocation;
+
     @NumberFormat(pattern = "#.##")
     double totalPrice;
+
     int totalQuantity;
+
     int totalBox;
     @NumberFormat(pattern = "#.##")
     double totalDistance;
+
+    @NumberFormat(pattern = "#.##")
+    double distancePrice;
+
+    @NumberFormat(pattern = "#.##")
+    double discountPrice;
+
     @NumberFormat(pattern = "#.##")
     double totalVolume;
+
     String recipientInfo;
+
     String customerNotes;
+
     MethodTransPort methodTransPort;
-    PaymentMethod paymentMethod;
+
     OrderStatus orderStatus;
 
     List<OrderDetails> orderDetails;
