@@ -169,7 +169,7 @@ public class OrderService {
 
     public String orderPaymentUrl(long orderId) throws Exception {
         Orders orders = orderRepository.findOrdersById(orderId);
-        if (orders.getOrderStatus() == OrderStatus.ACCEPTED) {
+        if (orders.getOrderStatus() == OrderStatus.AWAITING_PAYMENT) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime createDate = LocalDateTime.now();
             String formattedCreateDate = createDate.format(formatter);
@@ -294,8 +294,9 @@ public class OrderService {
                     AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
 
                     double distancePrice = order.calculateDistancePrice();
+                    double discountPrice = order.calculateDiscountPrice();
                     response.setDistancePrice(distancePrice);
-                    response.setDiscountPrice(order.getDescribeOrder().getDiscount());
+                    response.setDiscountPrice(discountPrice);
 
 
                     return response;

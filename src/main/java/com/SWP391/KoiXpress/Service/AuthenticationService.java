@@ -1,6 +1,7 @@
 package com.SWP391.KoiXpress.Service;
 
 
+import com.SWP391.KoiXpress.Annotation.Trimmed;
 import com.SWP391.KoiXpress.Entity.EmailDetail;
 import com.SWP391.KoiXpress.Entity.Enum.EmailStatus;
 import com.SWP391.KoiXpress.Entity.Enum.Role;
@@ -59,6 +60,8 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     AuthenticationRepository authenticationRepository;
 
+
+    @Trimmed
     public CreateUserByManagerResponse register(RegisterRequest registerRequest) {
         Users users = modelMapper.map(registerRequest, Users.class);
 
@@ -90,6 +93,7 @@ public class AuthenticationService implements UserDetailsService {
         }
     }
 
+    @Trimmed
     public LoginResponse login(LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -106,6 +110,7 @@ public class AuthenticationService implements UserDetailsService {
 
     }
 
+    @Trimmed
     public void forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
         Users users = userRepository.findUsersByEmail(forgotPasswordRequest.getEmail());
         if (users == null) {
@@ -120,6 +125,7 @@ public class AuthenticationService implements UserDetailsService {
 
     }
 
+    @Trimmed
     public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
         Users users = getCurrentUser();
         users.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
