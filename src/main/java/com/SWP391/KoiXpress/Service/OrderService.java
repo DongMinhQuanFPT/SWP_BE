@@ -158,13 +158,12 @@ public class OrderService {
         orders.setTotalVolume(totalVolume);
         orders.setTotalQuantity(totalQuantityFish);
         orderRepository.save(orders);
-        double calculateDistancePrice = orders.calculateDistancePrice();
+//        double calculateDistancePrice = orders.calculateDistancePrice();
         double calculatePrice = orders.calculatePrice();
         orders.setTotalPrice(calculatePrice);
         orderRepository.save(orders);
-        CreateOrderResponse createOrderResponse = modelMapper.map(orders, CreateOrderResponse.class);
-        createOrderResponse.setPriceDistance(calculateDistancePrice);
-        return createOrderResponse;
+        return modelMapper.map(orders, CreateOrderResponse.class);
+//        createOrderResponse.setPriceDistance(calculateDistancePrice);
     }
 
 
@@ -289,8 +288,18 @@ public class OrderService {
     public List<AllOrderByCurrentResponse> getAllOrdersByCurrentUser() {
         Users users = authenticationService.getCurrentUser();
         List<Orders> orders = orderRepository.findOrdersByUsers(users);
+
         return orders.stream()
-                .map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class))
+                .map(order -> {
+                    AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
+
+                    double distancePrice = order.calculateDistancePrice();
+                    response.setDistancePrice(distancePrice);
+                    response.setDiscountPrice(order.getDescribeOrder().getDiscount());
+
+
+                    return response;
+                })
                 .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED)
                 .sorted(Comparator.comparing(AllOrderByCurrentResponse::getOrderDate))
                 .collect(Collectors.toList());
