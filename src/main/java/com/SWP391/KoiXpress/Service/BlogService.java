@@ -8,6 +8,7 @@ import com.SWP391.KoiXpress.Model.response.Blog.AllBlogResponse;
 import com.SWP391.KoiXpress.Model.response.Blog.CreateBlogResponse;
 import com.SWP391.KoiXpress.Model.response.Blog.DeleteBlogResponse;
 import com.SWP391.KoiXpress.Model.response.Blog.UpdateBlogResponse;
+import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Model.response.User.EachUserResponse;
 import com.SWP391.KoiXpress.Repository.BlogRepository;
 import org.modelmapper.ModelMapper;
@@ -50,7 +51,7 @@ public class BlogService {
         return createBlogResponse;
     }
 
-    public List<AllBlogResponse> getAllBlog(int page, int size) {
+    public PagedResponse<AllBlogResponse> getAllBlog(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Blogs> blogsPage = blogRepository.findAll(pageRequest);
 
@@ -66,7 +67,7 @@ public class BlogService {
             allBlogResponses.add(allBlogResponse);
         }
 
-        return allBlogResponses;
+        return new PagedResponse<>(allBlogResponses,page, size, blogsPage.getTotalElements(), blogsPage.getTotalPages(),blogsPage.isLast());
     }
 
     public DeleteBlogResponse delete(long blogId) {

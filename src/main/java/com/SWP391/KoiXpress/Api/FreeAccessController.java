@@ -1,6 +1,7 @@
 package com.SWP391.KoiXpress.Api;
 
 import com.SWP391.KoiXpress.Model.response.Blog.AllBlogResponse;
+import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Model.response.Progress.ProgressResponse;
 import com.SWP391.KoiXpress.Service.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,10 +35,10 @@ public class FreeAccessController {
     ProgressService progressService;
 
     @GetMapping("/allBlog")
-    public ResponseEntity<List<AllBlogResponse>> getAllBlogs(
+    public ResponseEntity<PagedResponse<AllBlogResponse>> getAllBlogs(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size){
-        List<AllBlogResponse> blogResponses = blogService.getAllBlog(page - 1, size);
+        PagedResponse<AllBlogResponse> blogResponses = blogService.getAllBlog(page - 1, size);
         return ResponseEntity.ok(blogResponses);
     }
 
