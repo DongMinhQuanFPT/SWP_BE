@@ -17,5 +17,6 @@ public class DashboardService {
         Map<String, Object> dashboardStats = new HashMap<>();
         long totalOrders = orderRepository.count();
 
+        return null;
     }
 }
