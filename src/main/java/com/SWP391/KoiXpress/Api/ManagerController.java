@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -41,7 +42,8 @@ public class ManagerController {
     @Autowired
     WareHouseService wareHouseService;
 
-
+    @Autowired
+    DashboardService dashboardService;
 
     @PostMapping("/box")
     public ResponseEntity<CreateBoxResponse> createBox(@Valid @RequestBody CreateBoxRequest createBoxRequest) {
@@ -50,13 +52,13 @@ public class ManagerController {
     }
 
     @DeleteMapping("/box/{boxId}")
-    public ResponseEntity<String> deleteBox(@PathVariable long boxId){
+    public ResponseEntity<String> deleteBox(@PathVariable long boxId) {
         boxService.delete(boxId);
         return ResponseEntity.ok("Delete Box success");
     }
 
     @GetMapping("/allBox")
-    public ResponseEntity<List<Boxes>> getAllBox(){
+    public ResponseEntity<List<Boxes>> getAllBox() {
         return ResponseEntity.ok(boxService.getAllBox());
     }
 
@@ -64,7 +66,7 @@ public class ManagerController {
     public ResponseEntity<PagedResponse<AllBoxDetailResponse>> getAll(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PagedResponse<AllBoxDetailResponse> boxDetails = boxDetailService.getAllBox(page-1, size);
+        PagedResponse<AllBoxDetailResponse> boxDetails = boxDetailService.getAllBox(page - 1, size);
         return ResponseEntity.ok(boxDetails);
     }
 
@@ -122,4 +124,9 @@ public class ManagerController {
         return ResponseEntity.ok(wareHouseService.getAllWareHouseNotAvailable());
     }
 
+    @GetMapping("/dashboardStats")
+    public ResponseEntity getDashboardStats() {
+        Map<String, Object> stats = dashboardService.getDashboardStats();
+        return ResponseEntity.ok(stats);
+    }
 }

@@ -86,23 +86,14 @@ public class FeedBackService {
     }
 
     public FeedBackReply replyToFeedBack(long Id, String replyContent, String repliedBy) {
-
         FeedBacks feedBacks =getFeedById(Id);
-
-
         FeedBackReply feedBackReply = new FeedBackReply();
-
         feedBackReply.setFeedBacks(feedBacks);
         feedBackReply.setReplyContent(replyContent);
         feedBackReply.setRepliedBy(repliedBy);
         feedBackReply.setReplyDate(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-
         feedBackReply = feedBackReplyRepository.save(feedBackReply);
-
-
         feedBacks.getReplies().add(feedBackReply);
-
-
         feedBackRepository.save(feedBacks);
 
         return feedBackReply;
@@ -165,8 +156,11 @@ public class FeedBackService {
                     .map(reply -> {
                         FeedBackReplyResponse replyResponse = new FeedBackReplyResponse();
                         replyResponse.setReplyContent(reply.getReplyContent());
+                        replyResponse.setRepliedBy(reply.getRepliedBy());
+                        replyResponse.setReplyDate(reply.getReplyDate());
                         return replyResponse;
                     }).collect(Collectors.toList());
+
 
             feedBackResponse.setReplies(replyResponses);
             feedBackResponses.add(feedBackResponse);

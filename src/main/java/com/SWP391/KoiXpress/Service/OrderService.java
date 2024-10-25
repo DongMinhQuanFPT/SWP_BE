@@ -239,6 +239,7 @@ public class OrderService {
         payments.setCreatePayment(new Date());
         payments.setPaymentMethod(PaymentMethod.BANK_TRANSFER);
 
+
         Set<Transactions> setTransaction = new HashSet<>();
 
         //Customer transaction
