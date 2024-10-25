@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/api/user")
 @CrossOrigin("*")
 @SecurityRequirement(name="api")
-@PreAuthorize("hasAuthority('CUSTOMER','MANAGER','SALE_STAFF','DELIVERING_STAFF')")
+@PreAuthorize("hasAuthority('CUSTOMER') or hasAuthority('SALE_STAFF') or hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF')")
 public class UserController {
 
 

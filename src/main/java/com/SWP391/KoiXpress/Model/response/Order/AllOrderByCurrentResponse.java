@@ -6,6 +6,7 @@ import com.SWP391.KoiXpress.Entity.Enum.PaymentMethod;
 import com.SWP391.KoiXpress.Entity.OrderDetails;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.NumberFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -23,10 +24,13 @@ public class AllOrderByCurrentResponse {
     String originLocation;
     String nearWareHouse;
     String destinationLocation;
+    @NumberFormat(pattern = "#.##")
     double totalPrice;
     int totalQuantity;
     int totalBox;
+    @NumberFormat(pattern = "#.##")
     double totalDistance;
+    @NumberFormat(pattern = "#.##")
     double totalVolume;
     String recipientInfo;
     String customerNotes;

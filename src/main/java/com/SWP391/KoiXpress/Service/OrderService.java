@@ -265,6 +265,8 @@ public class OrderService {
 
 
         payments.setTransactions(setTransaction);
+        orders.setOrderStatus(OrderStatus.PAID);
+        orderRepository.save(orders);
         userRepository.save(customer);
         paymentRepository.save(payments);
     }
