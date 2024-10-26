@@ -5,7 +5,11 @@ import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
 import com.SWP391.KoiXpress.Entity.Enum.PaymentMethod;
 import com.SWP391.KoiXpress.Entity.OrderDetails;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.NumberFormat;
 
 import java.util.Date;
@@ -13,6 +17,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AllOrderByCurrentResponse {
     long id;
 
@@ -32,6 +39,9 @@ public class AllOrderByCurrentResponse {
 
     @NumberFormat(pattern = "#.##")
     double totalPrice;
+
+    @NumberFormat(pattern = "#.##")
+    double totalBoxPrice;
 
     int totalQuantity;
 

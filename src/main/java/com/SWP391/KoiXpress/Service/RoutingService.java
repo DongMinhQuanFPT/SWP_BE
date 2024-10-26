@@ -85,40 +85,4 @@ public class RoutingService {
         return hours + " hrs " + minutes + " mins";
     }
 
-    public String getRouteSegment(String startLocation, String endLocation) throws Exception {
-        // Sử dụng GeoCodingService để lấy tọa độ cho startLocation và endLocation
-        double[] startCoords = geoCodingService.geocoding(startLocation);
-        double[] endCoords = geoCodingService.geocoding(endLocation);
-
-        // Kiểm tra kết quả geocoding
-        System.out.println("Start Coords: " + Arrays.toString(startCoords));
-        System.out.println("End Coords: " + Arrays.toString(endCoords));
-
-        String url = UriComponentsBuilder.fromHttpUrl(GRAPH_HOPPER_API_URL)
-                .queryParam("point", startCoords[0] + "," + startCoords[1])
-                .queryParam("point", endCoords[0] + "," + endCoords[1])
-                .queryParam("vehicle", "truck")
-                .queryParam("key", API_KEY)
-                .toUriString();
-
-        System.out.println("GraphHopper API URL: " + url); // In ra URL để kiểm tra
-
-        try {
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
-            // In ra toàn bộ phản hồi JSON từ API để kiểm tra
-            System.out.println("API Response: " + response.getBody());
-
-            return response.getBody(); // Trả về phản hồi JSON từ API
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error fetching route segment: " + e.getMessage();
-        }
-    }
-
-    public double[] geocoding(String location) {
-        // Simulate geocoding here, or ideally, call a real geocoding service.
-        // For example, returning fixed coordinates for simplicity here.
-        return new double[]{ /* latitude */, /* longitude */ };
-    }
 }
