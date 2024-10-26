@@ -47,7 +47,7 @@ public class EmailService {
         }
     }
 
-    public boolean sendEmailResetPassword(EmailDetail emailDetail)  {
+    public void sendEmailResetPassword(EmailDetail emailDetail)  {
         try{
             Context context = new Context();
             context.setVariable("name",emailDetail.getUsers().getEmail());
@@ -64,13 +64,12 @@ public class EmailService {
             messageHelper.setText(template,true);
             messageHelper.setSubject(emailDetail.getSubject());
             javaMailSender.send(message);
-            return true;
         }catch(MessagingException e){
             throw new EmailNotVerifiedException("Error sending  email, please check your mail again");
         }
     }
 
-    public boolean sendEmailAccount(EmailDetail emailDetail)  {
+    public void sendEmailAccount(EmailDetail emailDetail)  {
         try{
             Context context = new Context();
             context.setVariable("name",emailDetail.getUsers().getEmail());
@@ -88,7 +87,6 @@ public class EmailService {
             messageHelper.setText(template,true);
             messageHelper.setSubject(emailDetail.getSubject());
             javaMailSender.send(message);
-            return true;
         }catch(MessagingException e){
             throw new EmailNotVerifiedException("Error sending  email, please check your mail again");
         }

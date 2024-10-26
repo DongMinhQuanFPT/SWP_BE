@@ -56,6 +56,9 @@ public class Orders {
     @NotNull(message = "totalPrice can not be null")
     double totalPrice;
 
+    @NumberFormat(pattern = "#.##")
+    double totalBoxPrice;
+
     int totalQuantity;
 
     int totalBox;
@@ -121,9 +124,10 @@ public class Orders {
         }
         throw new OrderException("Method transport is not selected");
     }
+
     public double calculateDiscountPrice(){
         if(methodTransPort!=null){
-            return totalPrice*describeOrder.getDiscount();
+            return (totalBoxPrice*describeOrder.getDiscount());
         }
         throw new OrderException("Method transport is not selected");
     }

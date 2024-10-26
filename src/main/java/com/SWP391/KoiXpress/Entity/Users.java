@@ -63,6 +63,8 @@ public class Users implements UserDetails {
     @Column(unique = true)
     String email;
 
+    float balance = 0;
+
     @Enumerated(EnumType.STRING)
     EmailStatus emailStatus = EmailStatus.NOT_VERIFIED;
 

@@ -70,6 +70,13 @@ public class ManagerController {
         return ResponseEntity.ok(boxDetails);
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<ProfileManagerResponse> getProfileManager(){
+        ProfileManagerResponse managerResponse = userService.getProfileManager();
+        return ResponseEntity.ok(managerResponse);
+    }
+
+
     @PostMapping("/user")
     public ResponseEntity<CreateUserByManagerResponse> createUserByManager(@Valid @RequestBody CreateUserByManagerRequest createUserByManagerRequest) {
         CreateUserByManagerResponse newUser = userService.create(createUserByManagerRequest);
@@ -125,7 +132,7 @@ public class ManagerController {
     }
 
     @GetMapping("/dashboardStats")
-    public ResponseEntity getDashboardStats() {
+    public ResponseEntity<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = dashboardService.getDashboardStats();
         return ResponseEntity.ok(stats);
     }

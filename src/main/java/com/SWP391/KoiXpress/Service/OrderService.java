@@ -70,6 +70,9 @@ public class OrderService {
     @Autowired
     PaymentRepository paymentRepository;
 
+    @Autowired
+    EmailService emailService;
+
     // Create
     public CreateOrderResponse create(CreateOrderRequest createOrderRequest) throws Exception {
         Users users = authenticationService.getCurrentUser();
@@ -153,17 +156,16 @@ public class OrderService {
             totalQuantityFish += orderDetail.getNumberOfFish();// Cộng dồn thể tích
         }
         orders.setOrderDetails(orderDetails);
+        orders.setTotalBoxPrice(totalPrice);
         orders.setTotalPrice(totalPrice);
         orders.setTotalBox(totalBox);
         orders.setTotalVolume(totalVolume);
         orders.setTotalQuantity(totalQuantityFish);
         orderRepository.save(orders);
-//        double calculateDistancePrice = orders.calculateDistancePrice();
         double calculatePrice = orders.calculatePrice();
         orders.setTotalPrice(calculatePrice);
         orderRepository.save(orders);
         return modelMapper.map(orders, CreateOrderResponse.class);
-//        createOrderResponse.setPriceDistance(calculateDistancePrice);
     }
 
 
@@ -233,6 +235,12 @@ public class OrderService {
         Orders orders = orderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException("Can not found order"));
 
+        EmailDetail emailDetail = new EmailDetail();
+        emailDetail.setSubject("Thank You");
+        emailDetail.setUsers(orders.getUsers());
+        emailDetail.setLink("http://transportkoifish.online");
+        emailService.sendEmailThankYou(emailDetail);
+
         Payments payments = new Payments();
         payments.setOrders(orders);
         payments.setCreatePayment(new Date());
@@ -260,13 +268,15 @@ public class OrderService {
         transactionCUSTOMERtoMANAGER.setPayments(payments);
         transactionCUSTOMERtoMANAGER.setTransactionStatus(TransactionStatus.SUCCESS);
         transactionCUSTOMERtoMANAGER.setDescription("Customer to Manager");
-
+        float balance = manager.getBalance() + (long)(orders.getTotalPrice());
+        manager.setBalance(balance);
         setTransaction.add(transactionCUSTOMERtoMANAGER);
 
 
         payments.setTransactions(setTransaction);
         orders.setOrderStatus(OrderStatus.PAID);
         orderRepository.save(orders);
+        userRepository.save(manager);
         userRepository.save(customer);
         paymentRepository.save(payments);
     }

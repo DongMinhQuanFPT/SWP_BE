@@ -29,6 +29,8 @@ public class Boxes {
     @NumberFormat(pattern = "#.##")
     double price;
 
+    boolean isAvailable;
+
     @OneToMany(mappedBy = "boxes", cascade = CascadeType.ALL)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

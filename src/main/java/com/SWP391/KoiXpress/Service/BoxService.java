@@ -25,13 +25,15 @@ public class BoxService {
         boxes.setType(createBoxRequest.getType());
         boxes.setVolume(createBoxRequest.getVolume());
         boxes.setPrice(createBoxRequest.getPrice());
+        boxes.setAvailable(true);
         boxRepository.save(boxes);
         return modelMapper.map(boxes, CreateBoxResponse.class);
     }
 
     public void delete(long id){
         Boxes boxes = findBoxById(id);
-        boxRepository.delete(boxes);
+        boxes.setAvailable(false);
+        boxRepository.save(boxes);
     }
 
     public List<Boxes> getAllBox(){

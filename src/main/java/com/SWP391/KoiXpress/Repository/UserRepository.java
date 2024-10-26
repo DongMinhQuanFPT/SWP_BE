@@ -27,6 +27,6 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     long countUsersByRole(Role role);
 
     @Query("SELECT u FROM Users u WHERE u.role = :role ORDER BY u.loyaltyPoint DESC")
-    List<Users> findTopCustomersByLoyaltyPoints(@Param("CUSTOMER") Role role, Pageable pageable);
+    List<Users> findTopCustomersByLoyaltyPoints(@Param("role") Role role, Pageable pageable);
 
 }
