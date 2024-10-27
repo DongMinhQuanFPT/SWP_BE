@@ -21,4 +21,8 @@ public interface OrderRepository extends JpaRepository<Orders,Long> {
     @Query("SELECT o FROM Orders o ORDER BY o.totalPrice DESC")
     List<Orders> findTopOrdersByTotalPrice(Pageable pageable);
 
+    @Query("SELECT SUM(o.totalPrice) FROM Orders o WHERE o.orderStatus = 'PAID'")
+    Double getTotalPriceOfPaidOrders();
+
+
 }

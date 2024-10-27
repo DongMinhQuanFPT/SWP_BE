@@ -17,6 +17,6 @@ public interface FeedBackRepository extends JpaRepository<FeedBacks, Long> {
 
     FeedBacks findById(long feedId);
     @Query("SELECT AVG(f.ratingScore) FROM FeedBacks f")
-    double getAverageRating();
+    Double getAverageRating();
 
 }

@@ -42,6 +42,10 @@ public class DashboardService {
         long totalOrders = orderRepository.count();
         dashboardStats.put("orders", totalOrders);
 
+        //TotalPrice orders
+        Double totalPaidOrdersPrice = orderRepository.getTotalPriceOfPaidOrders();
+        dashboardStats.put("totalPaidOrdersPrice", totalPaidOrdersPrice != null ? totalPaidOrdersPrice : 0.0);
+
         // Top 5 Customers by Loyalty Points
         List<EachUserResponse> topCustomers = getTopCustomersByLoyaltyPoints(5);
         dashboardStats.put("topCustomers", topCustomers);
@@ -53,10 +57,11 @@ public class DashboardService {
         //Số customer
         long customersCount = userRepository.countUsersByRole(Role.CUSTOMER);
         dashboardStats.put("customersCount", customersCount);
-
+        //Số Sales
         long salesCount = userRepository.countUsersByRole(Role.SALE_STAFF);
         dashboardStats.put("salesCount", salesCount);
 
+        //Diem tb rating fb
         double averageRating = feedBackRepository.getAverageRating();
         dashboardStats.put("averageRatingScore", averageRating);
 
