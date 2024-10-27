@@ -36,14 +36,8 @@ public class CreateUserByManagerRequest {
     @Column(length = 200)
     String address;
 
-    @NotBlank(message = "phone can not be blank!")
-    @Pattern(regexp = "(84|0[3|5|7|8|9])+(\\d{8})", message = "Invalid phone!")
-    @Column(unique = true)
     String phone;
 
-    @NotBlank(message = "email can not be blank!")
-    @Email(message = "Email not valid")
-    @Column(unique = true)
     String email;
 
     @Enumerated(EnumType.STRING)

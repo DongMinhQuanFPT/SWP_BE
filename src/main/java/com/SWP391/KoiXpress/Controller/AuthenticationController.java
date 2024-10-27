@@ -23,33 +23,47 @@ public class AuthenticationController {
     @Autowired
     AuthenticationService authenticationService;
 
-
+    //////////////////////Register///////////////////////////
     @PostMapping("/register")
     public ResponseEntity<CreateUserByManagerResponse> register(@Valid @RequestBody RegisterRequest registerRequest){
         CreateUserByManagerResponse newUser =  authenticationService.register(registerRequest);
         return ResponseEntity.ok(newUser);
     }
+    /////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Login/////////////////////////////
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest){
         LoginResponse newUser = authenticationService.login(loginRequest);
         return ResponseEntity.ok(newUser);
     }
+    ////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Forgot-Password///////////////////////////
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest){
         authenticationService.forgotPassword(forgotPasswordRequest);
         return ResponseEntity.ok("Check your email!");
     }
+    ///////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Reset-Password///////////////////////////
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
         authenticationService.resetPassword(resetPasswordRequest);
         return ResponseEntity.ok("Reset password successfully");
     }
+    //////////////////////////////////////////////////////////////
 
 
 
+    //////////////////////Login-Google///////////////////////////
     @PostMapping("/login-google")
     public ResponseEntity<?> googleLogin(@RequestBody LoginGoogleRequest loginGoogleRequest) {
         try {
@@ -60,4 +74,6 @@ public class AuthenticationController {
                     .body(e.getMessage());
         }
     }
+    ////////////////////////////////////////////////////////////
+
 }
