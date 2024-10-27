@@ -11,11 +11,13 @@ import com.SWP391.KoiXpress.Model.request.Order.CreateOrderRequest;
 import com.SWP391.KoiXpress.Model.request.Order.UpdateOrderRequest;
 import com.SWP391.KoiXpress.Model.response.Box.CreateBoxDetailResponse;
 import com.SWP391.KoiXpress.Model.response.Order.*;
+import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Model.response.User.UserResponse;
 import com.SWP391.KoiXpress.Repository.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -296,11 +298,12 @@ public class OrderService {
     }
 
 
-    public List<AllOrderByCurrentResponse> getAllOrdersByCurrentUser() {
+    public PagedResponse<AllOrderByCurrentResponse> getAllOrdersByCurrentUser(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
         Users users = authenticationService.getCurrentUser();
-        List<Orders> orders = orderRepository.findOrdersByUsers(users);
+        Page<Orders> orders = orderRepository.findOrdersByUsers(users, pageRequest);
 
-        return orders.stream()
+        List<AllOrderByCurrentResponse> responses = orders.stream()
                 .map(order -> {
                     AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
 
@@ -309,23 +312,37 @@ public class OrderService {
                     response.setDistancePrice(distancePrice);
                     response.setDiscountPrice(discountPrice);
 
-
                     return response;
                 })
                 .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED)
                 .sorted(Comparator.comparing(AllOrderByCurrentResponse::getOrderDate))
                 .collect(Collectors.toList());
+
+        Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(responses, pageRequest, orders.getTotalElements());
+
+        return new PagedResponse<>(
+                responsePage.getContent(),
+                page,
+                size,
+                responsePage.getTotalElements(),
+                responsePage.getTotalPages(),
+                responsePage.isLast()
+        );
     }
 
-    public List<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser() {
-        Users users = authenticationService.getCurrentUser();
-        List<Orders> orders = orderRepository.findOrdersByUsers(users);
-        return orders.stream()
-                .map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class))
-                .filter(order -> order.getOrderStatus() == OrderStatus.DELIVERED)
-                .sorted(Comparator.comparing(AllOrderByCurrentResponse::getOrderDate))
-                .collect(Collectors.toList());
+
+    public PagedResponse<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Users currentUser = authenticationService.getCurrentUser();
+
+        Page<Orders> ordersPage = orderRepository.findOrdersByUsers(currentUser, pageRequest);
+
+        Page<AllOrderByCurrentResponse> responsePage = ordersPage.map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class));
+
+        return new PagedResponse<>(responsePage.getContent(), responsePage.getNumber(),
+                responsePage.getSize(), responsePage.getTotalElements(), responsePage.getTotalPages(), responsePage.isLast());
     }
+
 
     //Sale update
     public UpdateOrderResponse updateBySale(long id, UpdateOrderRequest updateOrderRequest) {

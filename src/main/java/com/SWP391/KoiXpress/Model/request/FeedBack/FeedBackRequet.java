@@ -11,7 +11,7 @@ public class FeedBackRequet {
     @NotNull(message = "you need to rate")
     @Min(value = 0)
     @Max(value = 5)
-    byte ratingScore;
+    float ratingScore;
 
     @Column(length = 200)
     String comment;

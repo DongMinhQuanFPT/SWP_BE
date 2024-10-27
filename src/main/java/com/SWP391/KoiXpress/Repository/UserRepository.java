@@ -29,4 +29,5 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     @Query("SELECT u FROM Users u WHERE u.role = :role ORDER BY u.loyaltyPoint DESC")
     List<Users> findTopCustomersByLoyaltyPoints(@Param("role") Role role, Pageable pageable);
 
+
 }
