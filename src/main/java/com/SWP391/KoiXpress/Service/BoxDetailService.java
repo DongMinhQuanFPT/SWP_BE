@@ -94,7 +94,9 @@ public class BoxDetailService {
 
         // Khởi tạo boxCount với các loại hộp và số lượng ban đầu là 0
         for (Boxes box : boxes) {
-            boxCount.put(box.getType(), 0);
+            if(box.isAvailable()){
+                boxCount.put(box.getType(), 0);
+            }
         }
 
         // Phân phối thể tích vào các hộp từ lớn đến nhỏ

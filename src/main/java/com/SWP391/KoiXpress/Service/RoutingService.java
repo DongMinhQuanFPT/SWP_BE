@@ -30,6 +30,7 @@ public class RoutingService {
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
             if (response.getStatusCode().is2xxSuccessful()) {
                 Map<String, Object> responseBody = response.getBody();
+                assert responseBody != null;
                 return formatRouteResponse(responseBody);
             } else {
                 return "Error: Unable to fetch the route.";

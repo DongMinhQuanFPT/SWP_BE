@@ -2,6 +2,7 @@ package com.SWP391.KoiXpress.Controller;
 
 import com.SWP391.KoiXpress.Model.request.User.UpdateCustomerRequest;
 import com.SWP391.KoiXpress.Model.response.Order.AllOrderByCurrentResponse;
+import com.SWP391.KoiXpress.Model.response.User.EachUserResponse;
 import com.SWP391.KoiXpress.Model.response.User.UpdateCustomerResponse;
 import com.SWP391.KoiXpress.Service.OrderService;
 import com.SWP391.KoiXpress.Service.UserService;
@@ -40,4 +41,10 @@ public class UserController {
         return ResponseEntity.ok(createOrderResponseList);
     }
 
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasAuthority('CUSTOMER') or hasAuthority('SALE_STAFF') or hasAuthority('DELIVERING_STAFF')")
+    public ResponseEntity<EachUserResponse> getEachUser(@PathVariable long userId) {
+        EachUserResponse user = userService.getEachUserById(userId);
+        return ResponseEntity.ok(user);
+    }
 }

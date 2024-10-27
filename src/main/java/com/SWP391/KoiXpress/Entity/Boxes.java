@@ -3,6 +3,7 @@ package com.SWP391.KoiXpress.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.NumberFormat;
@@ -21,6 +22,7 @@ public class Boxes {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
 
+    @NotBlank(message = "Type can not be blank")
     String type;
 
     @NumberFormat(pattern = "#.##")

@@ -67,6 +67,7 @@ public class FreeAccessController {
         try {
             double[] startCoords = geoCodingService.geocoding(startLocation);
             double[] endCoords = geoCodingService.geocoding(endLocation);
+
             String route = routingService.getFormattedRoute(startCoords[0], startCoords[1], endCoords[0], endCoords[1]);
             return ResponseEntity.ok(route);
         } catch (Exception e) {
