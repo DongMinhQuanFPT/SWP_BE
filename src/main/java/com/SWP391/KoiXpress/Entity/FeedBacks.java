@@ -36,7 +36,7 @@ public class FeedBacks {
     @NotNull(message = "you need to rate")
     @Min(value = 0)
     @Max(value = 5)
-    byte ratingScore;
+    float ratingScore;
 
     @Column(length = 200)
     String comment;
@@ -44,7 +44,6 @@ public class FeedBacks {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date createdTime;
 
-    boolean isDelete = false;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "feedBacks")
     @JsonManagedReference

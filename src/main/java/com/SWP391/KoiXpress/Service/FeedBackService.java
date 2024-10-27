@@ -77,7 +77,7 @@ public class FeedBackService {
     public void deleteFeedBack(long FeedId) {
         try {
             FeedBacks feedBacks = getFeedById(FeedId);
-            feedBacks.setDelete(true);
+            feedBacks.setDeleted(true);
             feedBackRepository.save(feedBacks);
         } catch (Exception e) {
             e.printStackTrace();

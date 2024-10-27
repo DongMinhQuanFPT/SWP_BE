@@ -331,15 +331,18 @@ public class OrderService {
     }
 
 
-    public List<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser() {
-        Users users = authenticationService.getCurrentUser();
-        List<Orders> orders = orderRepository.findOrdersByUsers(users);
-        return orders.stream()
-                .map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class))
-                .filter(order -> order.getOrderStatus() == OrderStatus.DELIVERED)
-                .sorted(Comparator.comparing(AllOrderByCurrentResponse::getOrderDate))
-                .collect(Collectors.toList());
+    public PagedResponse<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Users currentUser = authenticationService.getCurrentUser();
+
+        Page<Orders> ordersPage = orderRepository.findOrdersByUsers(currentUser, pageRequest);
+
+        Page<AllOrderByCurrentResponse> responsePage = ordersPage.map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class));
+
+        return new PagedResponse<>(responsePage.getContent(), responsePage.getNumber(),
+                responsePage.getSize(), responsePage.getTotalElements(), responsePage.getTotalPages(), responsePage.isLast());
     }
+
 
     //Sale update
     public UpdateOrderResponse updateBySale(long id, UpdateOrderRequest updateOrderRequest) {

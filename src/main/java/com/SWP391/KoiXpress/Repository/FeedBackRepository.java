@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FeedBackRepository extends JpaRepository<FeedBacks, Long> {
@@ -17,6 +18,6 @@ public interface FeedBackRepository extends JpaRepository<FeedBacks, Long> {
 
     FeedBacks findById(long feedId);
     @Query("SELECT AVG(f.ratingScore) FROM FeedBacks f")
-    Double getAverageRating();
+    Optional<Double> getAverageRating();
 
 }

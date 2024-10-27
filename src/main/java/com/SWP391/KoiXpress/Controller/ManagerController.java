@@ -189,10 +189,19 @@ public class ManagerController {
 
 
     //////////////////////Get-DashBroad///////////////////////////
-    @GetMapping("/dashboardStats")
+    @GetMapping("/dashboard/dashboardStats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = dashboardService.getDashboardStats();
         return ResponseEntity.ok(stats);
+    }
+    //////////////////////////////////////////////////////////////
+
+
+    //////////////////////Get-OrderStatistics///////////////////////////
+    @GetMapping("/dashboard/orderStatistics")
+    public List<Map<String, Object>> getOrderStatistics(@RequestParam String filter) {
+        // Call the service method and return the result
+        return dashboardService.getOrderStatistics(filter);
     }
     //////////////////////////////////////////////////////////////
 }
