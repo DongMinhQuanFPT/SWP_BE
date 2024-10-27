@@ -31,34 +31,52 @@ public class DeliveryStaffController {
     @Autowired
     OrderService orderService;
 
+
+    //////////////////////Create-Progress///////////////////////////
     @PostMapping("/progress")
-    public ResponseEntity<List<ProgressResponse>> create(@Valid @RequestBody ProgressRequest progressRequest){
+    public ResponseEntity<List<ProgressResponse>> createProgress(@Valid @RequestBody ProgressRequest progressRequest){
         List<ProgressResponse> progresses = progressService.create(progressRequest);
         return ResponseEntity.ok(progresses);
     }
+    ///////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Update-Progress///////////////////////////
     @PutMapping("{progressId}")
-    public ResponseEntity<UpdateProgressResponse> update(@PathVariable long progressId,@Valid @RequestBody UpdateProgressRequest updateProgressRequest){
+    public ResponseEntity<UpdateProgressResponse> updateProgress(@PathVariable long progressId, @Valid @RequestBody UpdateProgressRequest updateProgressRequest){
         UpdateProgressResponse updateProgressResponse = progressService.update(progressId, updateProgressRequest);
         return ResponseEntity.ok(updateProgressResponse);
     }
+    ///////////////////////////////////////////////////////////////
 
+
+    //////////////////////Delete-Progress///////////////////////////
     @DeleteMapping("{progressId}")
-    public ResponseEntity<DeleteProgressResponse> delete(@PathVariable long progressId){
+    public ResponseEntity<DeleteProgressResponse> deleteProgress(@PathVariable long progressId){
         DeleteProgressResponse deleteProgressResponse = progressService.delete(progressId);
         return ResponseEntity.ok(deleteProgressResponse);
     }
+    ////////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Get-Progress-By-{OrderID}///////////////////////////
     @GetMapping("/progress/{orderId}")
     public ResponseEntity<List<ProgressResponse>> getProgressByOrderId(@PathVariable long orderId){
         List<ProgressResponse> progressResponses = progressService.findProgressesByOrderId(orderId);
         return ResponseEntity.ok(progressResponses);
     }
+    /////////////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Update-Order///////////////////////////
     @PutMapping("/order/{orderId}")
     public ResponseEntity<UpdateOrderResponse> updateOrderByDelivery(@PathVariable long orderId, @Valid @RequestBody UpdateOrderRequest updateOrderRequest){
         UpdateOrderResponse updateOrderByDelivery= orderService.updateOrderByDelivery(orderId, updateOrderRequest);
         return ResponseEntity.ok(updateOrderByDelivery);
     }
+    /////////////////////////////////////////////////////////////
 
 }

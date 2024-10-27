@@ -17,8 +17,6 @@ import com.SWP391.KoiXpress.Service.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -48,56 +46,38 @@ public class ManagerController {
     @Autowired
     DashboardService dashboardService;
 
-    @PostMapping("/box")
-    public ResponseEntity<CreateBoxResponse> createBox(@Valid @RequestBody CreateBoxRequest createBoxRequest) {
-        CreateBoxResponse box = boxService.create(createBoxRequest);
-        return ResponseEntity.ok(box);
-    }
 
-    @PutMapping("/box")
-    public ResponseEntity<Boxes> updateBox(@PathVariable long id, @Valid @RequestBody UpdateBoxRequest updateBoxRequest){
-        Boxes boxes = boxService.update(id,updateBoxRequest);
-        return ResponseEntity.ok(boxes);
-    }
-
-    @DeleteMapping("/box/{boxId}")
-    public ResponseEntity<String> deleteBox(@PathVariable long boxId) {
-        boxService.delete(boxId);
-        return ResponseEntity.ok("Delete Box success");
-    }
-
-    @GetMapping("/allBox")
-    public ResponseEntity<List<Boxes>> getAllBox() {
-        return ResponseEntity.ok(boxService.getAllBox());
-    }
-
-    @GetMapping("/allBoxDetail")
-    public ResponseEntity<PagedResponse<AllBoxDetailResponse>> getAll(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        PagedResponse<AllBoxDetailResponse> boxDetails = boxDetailService.getAllBox(page - 1, size);
-        return ResponseEntity.ok(boxDetails);
-    }
-
+    //////////////////////Get-Profile-Manager///////////////////////////
     @GetMapping("/profile")
     public ResponseEntity<ProfileManagerResponse> getProfileManager(){
         ProfileManagerResponse managerResponse = userService.getProfileManager();
         return ResponseEntity.ok(managerResponse);
     }
+    ////////////////////////////////////////////////////////////////////
 
 
+
+    //////////////////////Create-User///////////////////////////
     @PostMapping("/user")
     public ResponseEntity<CreateUserByManagerResponse> createUserByManager(@Valid @RequestBody CreateUserByManagerRequest createUserByManagerRequest) {
         CreateUserByManagerResponse newUser = userService.create(createUserByManagerRequest);
         return ResponseEntity.ok(newUser);
     }
+    ////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Update-User///////////////////////////
     @PutMapping("/{userId}")
     public ResponseEntity<UpdateCustomerResponse> updateUserByManager(@PathVariable long userId, @Valid @RequestBody UpdateUserByManagerRequest updateUserByManagerRequest) {
         UpdateCustomerResponse updateUser = userService.update(userId, updateUserByManagerRequest);
         return ResponseEntity.ok(updateUser);
     }
+    ////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Get-All-User///////////////////////////
     @GetMapping("/allUser")
     public ResponseEntity<PagedResponse<LoginResponse>> getAllUser(
             @RequestParam(defaultValue = "1") int page,
@@ -105,38 +85,114 @@ public class ManagerController {
         PagedResponse<LoginResponse> pagedResponse = userService.getAllUser(page - 1, size);
         return ResponseEntity.ok(pagedResponse);
     }
+    /////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Delete-User///////////////////////////
     @DeleteMapping("/{userId}")
     public ResponseEntity<DeleteUserByManagerResponse> deleteUserByManager(@PathVariable long userId) {
         DeleteUserByManagerResponse deleteUser = userService.deleteByManager(userId);
         return ResponseEntity.ok(deleteUser);
     }
+    ///////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Create-Box///////////////////////////
+    @PostMapping("/box")
+    public ResponseEntity<CreateBoxResponse> createBox(@Valid @RequestBody CreateBoxRequest createBoxRequest) {
+        CreateBoxResponse box = boxService.create(createBoxRequest);
+        return ResponseEntity.ok(box);
+    }
+    ///////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Update-Box///////////////////////////
+    @PutMapping("/box")
+    public ResponseEntity<Boxes> updateBox(@PathVariable long id, @Valid @RequestBody UpdateBoxRequest updateBoxRequest){
+        Boxes boxes = boxService.update(id,updateBoxRequest);
+        return ResponseEntity.ok(boxes);
+    }
+    //////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Delete-Box///////////////////////////
+    @DeleteMapping("/box/{boxId}")
+    public ResponseEntity<String> deleteBox(@PathVariable long boxId) {
+        boxService.delete(boxId);
+        return ResponseEntity.ok("Delete Box success");
+    }
+    ///////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Get-All-Box///////////////////////////
+    @GetMapping("/allBox")
+    public ResponseEntity<List<Boxes>> getAllBox() {
+        return ResponseEntity.ok(boxService.getAllBox());
+    }
+    ////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Get-All-BoxDetail///////////////////////////
+    @GetMapping("/allBoxDetail")
+    public ResponseEntity<PagedResponse<AllBoxDetailResponse>> getAllBoxDetail(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PagedResponse<AllBoxDetailResponse> boxDetails = boxDetailService.getAllBox(page - 1, size);
+        return ResponseEntity.ok(boxDetails);
+    }
+    //////////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Create-WareHouse///////////////////////////
     @PostMapping("/wareHouse")
-    public ResponseEntity<CreateWarehouseResponse> create(@Valid @RequestBody CreateWareHouseRequest wareHouse) {
+    public ResponseEntity<CreateWarehouseResponse> createWareHouse(@Valid @RequestBody CreateWareHouseRequest wareHouse) {
         CreateWarehouseResponse newWareHouse = wareHouseService.create(wareHouse);
         return ResponseEntity.ok(newWareHouse);
     }
+    ////////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Delete-WareHouse///////////////////////////
     @DeleteMapping("/wareHouse/{id}")
-    public ResponseEntity<String> delete(@PathVariable long id) {
+    public ResponseEntity<String> deleteWareHouse(@PathVariable long id) {
         wareHouseService.delete(id);
         return ResponseEntity.ok("Delete success");
     }
+    ////////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Get-All-WareHouse-Available///////////////////////////
     @GetMapping("/wareHouse/available")
     public ResponseEntity<List<WareHouses>> getAllWareHouseAvailable() {
         return ResponseEntity.ok(wareHouseService.getAllWareHouseAvailable());
     }
+    ///////////////////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Get-All-WareHouse-NotAvailable///////////////////////////
     @GetMapping("/wareHouse/notAvailable")
     public ResponseEntity<List<WareHouses>> getAllWareHouseNotAvailable() {
         return ResponseEntity.ok(wareHouseService.getAllWareHouseNotAvailable());
     }
+    ///////////////////////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Get-DashBroad///////////////////////////
     @GetMapping("/dashboardStats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = dashboardService.getDashboardStats();
         return ResponseEntity.ok(stats);
     }
+    //////////////////////////////////////////////////////////////
 }

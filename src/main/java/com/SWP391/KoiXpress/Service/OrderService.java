@@ -122,10 +122,10 @@ public class OrderService {
         orders.setDescribeOrder(createOrderRequest.getDescribeOrder());
         orderRepository.save(orders);
 
-        List<OrderDetailService> orderDetails = new ArrayList<>();
+        List<OrderDetails> orderDetails = new ArrayList<>();
         for (OrderDetailRequest orderDetailRequest : createOrderRequest.getOrderDetailRequestList()) {
             Map<Double, Integer> fishSizeQuantityMap = Map.of(orderDetailRequest.getSizeOfFish(), orderDetailRequest.getNumberOfFish());
-            OrderDetailService orderDetail = new OrderDetailService();
+            OrderDetails orderDetail = new OrderDetails();
 
             orderDetail.setOrders(orders);
             orderDetail.setPriceOfFish(orderDetailRequest.getPriceOfFish());
@@ -149,7 +149,7 @@ public class OrderService {
             orderDetails.add(orderDetail);
 
         }
-        for (OrderDetailService orderDetail : orderDetails) {
+        for (OrderDetails orderDetail : orderDetails) {
             totalPrice += orderDetail.getPrice(); // Cộng dồn giá
             totalBox += orderDetail.getTotalBox(); // Cộng dồn số lượng
             totalVolume += orderDetail.getTotalVolume();
@@ -456,6 +456,7 @@ public class OrderService {
     //
 
     //Delete
+
     public DeleteOrderResponse delete(long id) {
         Orders oldOrders = getOrderById(id);
         if (oldOrders.getOrderStatus() == OrderStatus.DELIVERED) {
