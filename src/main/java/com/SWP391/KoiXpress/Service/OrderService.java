@@ -337,7 +337,14 @@ public class OrderService {
 
         Page<Orders> ordersPage = orderRepository.findOrdersByUsers(currentUser, pageRequest);
 
-        Page<AllOrderByCurrentResponse> responsePage = ordersPage.map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class));
+        List<AllOrderByCurrentResponse> allOrderByCurrentResponseList = ordersPage
+                .stream()
+                .map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class))
+                .filter(order->order.getOrderStatus() == OrderStatus.DELIVERED)
+                .sorted(Comparator.comparing(AllOrderByCurrentResponse::getOrderDate))
+                .collect(Collectors.toList());
+
+        Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(allOrderByCurrentResponseList,pageRequest,ordersPage.getTotalPages());
 
         return new PagedResponse<>(responsePage.getContent(), responsePage.getNumber(),
                 responsePage.getSize(), responsePage.getTotalElements(), responsePage.getTotalPages(), responsePage.isLast());
@@ -512,8 +519,6 @@ public class OrderService {
             return orderResponse;
         }).collect(Collectors.toList());
     }
-
-
 
 
     private double extractDistance(String routeInfo) {

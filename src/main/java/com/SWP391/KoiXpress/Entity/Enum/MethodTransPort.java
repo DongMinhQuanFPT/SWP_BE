@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum MethodTransPort {
-    FAST_DELIVERY(0.42),
-    NORMAL_DELIVERY(0.22);
+    FAST_DELIVERY(11126.8),
+    NORMAL_DELIVERY(5581.4);
 
     private final double price;
 
