@@ -81,26 +81,37 @@ public class ProgressService {
         Orders orders = orderRepository.findOrdersById(oldProgresses.getOrders().getId());
         WareHouses wareHouses = wareHouseRepository.findWareHousesByLocation(orders.getNearWareHouse());
 
-        if (wareHouses != null && wareHouses.isAvailable()) {
-            oldProgresses.setDateProgress(new Date());
-            oldProgresses.setHealthFishStatus(updateProgressRequest.getHealthFishStatus());
-            if(updateProgressRequest.getHealthFishStatus()== HealthFishStatus.UNHEALTHY){
-                oldProgresses.setProgressStatus(ProgressStatus.CANCELED);
-                progressRepository.save(oldProgresses);
-                return modelMapper.map(oldProgresses, UpdateProgressResponse.class);
-            }
+        if (wareHouses == null || !wareHouses.isAvailable()) {
+            throw new ProgressException("Cannot update - Warehouse unavailable.");
+        }
+
+        // Cập nhật các trường chính
+        oldProgresses.setDateProgress(new Date());
+        oldProgresses.setHealthFishStatus(updateProgressRequest.getHealthFishStatus());
+
+        // Kiểm tra tình trạng sức khỏe cá
+        if (updateProgressRequest.getHealthFishStatus() == HealthFishStatus.UNHEALTHY) {
+            oldProgresses.setProgressStatus(ProgressStatus.CANCELED);
+        } else {
             oldProgresses.setImage(updateProgressRequest.getImage());
             oldProgresses.setProgressStatus(updateProgressRequest.getProgressStatus());
-            if(updateProgressRequest.getProgressStatus() != null){
-                oldProgresses.setInProgress(true);
+
+            if (updateProgressRequest.getProgressStatus() == ProgressStatus.HANDED_OVER) {
+                orders.setOrderStatus(OrderStatus.DELIVERED);
+                orderRepository.save(orders); // Lưu cập nhật đơn hàng
             }
-            oldProgresses.setWareHouses(wareHouses);
-            wareHouseRepository.save(wareHouses);
-            progressRepository.save(oldProgresses);
-            return modelMapper.map(oldProgresses, UpdateProgressResponse.class);
+
+            oldProgresses.setInProgress(updateProgressRequest.getProgressStatus() != null);
         }
-        throw new ProgressException("Can not update");
+
+        // Cập nhật thông tin kho hàng và lưu progress
+        oldProgresses.setWareHouses(wareHouses);
+        wareHouseRepository.save(wareHouses);
+        progressRepository.save(oldProgresses);
+
+        return modelMapper.map(oldProgresses, UpdateProgressResponse.class);
     }
+
 
     public DeleteProgressResponse delete(long id) {
         Progresses progresses = progressRepository.findProgressesById(id);

@@ -46,7 +46,6 @@ public class OrderDetails {
     @Enumerated(EnumType.STRING)
     HealthFishStatus healthFishStatus;
 
-    @NotBlank(message = "number fish can not blank")
     int numberOfFish;
 
     @NumberFormat(pattern = "#.##")

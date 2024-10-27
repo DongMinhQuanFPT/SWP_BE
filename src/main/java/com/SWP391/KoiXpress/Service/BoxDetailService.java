@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.swing.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -84,7 +85,10 @@ public class BoxDetailService {
             totalVolume += getFishVolume(entry.getValue(), entry.getKey());
         }
 
-        List<Boxes> boxes = boxRepository.findAll(Sort.by(Sort.Order.desc("volume")));
+        List<Boxes> boxes = boxRepository.findAll().stream()
+                .filter(Boxes::isAvailable)
+                .sorted(Comparator.comparingDouble(Boxes::getVolume).reversed())
+                .toList();
         Map<String, Integer> boxCount = new LinkedHashMap<>();
 
         double remainingVolume = totalVolume;
@@ -94,9 +98,7 @@ public class BoxDetailService {
 
         // Khởi tạo boxCount với các loại hộp và số lượng ban đầu là 0
         for (Boxes box : boxes) {
-            if(box.isAvailable()){
                 boxCount.put(box.getType(), 0);
-            }
         }
 
         // Phân phối thể tích vào các hộp từ lớn đến nhỏ
