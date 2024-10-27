@@ -3,6 +3,7 @@ package com.SWP391.KoiXpress.Controller;
 import com.SWP391.KoiXpress.Entity.Boxes;
 import com.SWP391.KoiXpress.Entity.WareHouses;
 import com.SWP391.KoiXpress.Model.request.Box.CreateBoxRequest;
+import com.SWP391.KoiXpress.Model.request.Box.UpdateBoxRequest;
 import com.SWP391.KoiXpress.Model.request.User.CreateUserByManagerRequest;
 import com.SWP391.KoiXpress.Model.request.User.UpdateUserByManagerRequest;
 import com.SWP391.KoiXpress.Model.request.WareHouse.CreateWareHouseRequest;
@@ -16,6 +17,8 @@ import com.SWP391.KoiXpress.Service.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +52,12 @@ public class ManagerController {
     public ResponseEntity<CreateBoxResponse> createBox(@Valid @RequestBody CreateBoxRequest createBoxRequest) {
         CreateBoxResponse box = boxService.create(createBoxRequest);
         return ResponseEntity.ok(box);
+    }
+
+    @PutMapping("/box")
+    public ResponseEntity<Boxes> updateBox(@PathVariable long id, @Valid @RequestBody UpdateBoxRequest updateBoxRequest){
+        Boxes boxes = boxService.update(id,updateBoxRequest);
+        return ResponseEntity.ok(boxes);
     }
 
     @DeleteMapping("/box/{boxId}")
@@ -95,12 +104,6 @@ public class ManagerController {
             @RequestParam(defaultValue = "10") int size) {
         PagedResponse<LoginResponse> pagedResponse = userService.getAllUser(page - 1, size);
         return ResponseEntity.ok(pagedResponse);
-    }
-
-    @GetMapping("/{userId}")
-    public ResponseEntity<EachUserResponse> getEachUser(@PathVariable long userId) {
-        EachUserResponse user = userService.getEachUserById(userId);
-        return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{userId}")

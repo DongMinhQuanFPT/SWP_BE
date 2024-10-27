@@ -44,17 +44,24 @@ public class Orders {
     @NotBlank(message = "need information of recipient")
     String recipientInfo;
 
+    String customerNotes;
+
     @NotBlank(message = "location start can not be blank")
     String originLocation;
-
-    String nearWareHouse;
 
     @NotBlank(message = "location end can not be blank")
     String destinationLocation;
 
-    @Min(value = 0,message = "totalPrice at least 0")
-    @NotNull(message = "totalPrice can not be null")
-    double totalPrice;
+    String nearWareHouse;
+
+    @Enumerated(EnumType.STRING)
+    DescribeOrder describeOrder;
+
+    @Enumerated(EnumType.STRING)
+    MethodTransPort methodTransPort;
+
+    @Enumerated(EnumType.STRING)
+    OrderStatus orderStatus;
 
     @NumberFormat(pattern = "#.##")
     double totalBoxPrice;
@@ -69,16 +76,9 @@ public class Orders {
     @NumberFormat(pattern = "#.##")
     double totalVolume;
 
-    String customerNotes;
-
-    @Enumerated(EnumType.STRING)
-    DescribeOrder describeOrder;
-
-    @Enumerated(EnumType.STRING)
-    MethodTransPort methodTransPort;
-
-    @Enumerated(EnumType.STRING)
-    OrderStatus orderStatus;
+    @Min(value = 0,message = "totalPrice at least 0")
+    @NotNull(message = "totalPrice can not be null")
+    double totalPrice;
 
     @ManyToOne
     @JoinColumn(name="user_id")

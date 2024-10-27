@@ -3,6 +3,7 @@ package com.SWP391.KoiXpress.Service;
 import com.SWP391.KoiXpress.Entity.Boxes;
 import com.SWP391.KoiXpress.Exception.BoxException;
 import com.SWP391.KoiXpress.Model.request.Box.CreateBoxRequest;
+import com.SWP391.KoiXpress.Model.request.Box.UpdateBoxRequest;
 import com.SWP391.KoiXpress.Model.response.Box.CreateBoxResponse;
 import com.SWP391.KoiXpress.Repository.BoxRepository;
 import org.modelmapper.ModelMapper;
@@ -34,6 +35,15 @@ public class BoxService {
         Boxes boxes = findBoxById(id);
         boxes.setAvailable(false);
         boxRepository.save(boxes);
+    }
+
+    public Boxes update(long id, UpdateBoxRequest updateBoxRequest){
+        Boxes boxes = findBoxById(id);
+        boxes.setType(updateBoxRequest.getType());
+        boxes.setVolume(updateBoxRequest.getVolume());
+        boxes.setPrice(updateBoxRequest.getPrice());
+        boxRepository.save(boxes);
+        return boxes;
     }
 
     public List<Boxes> getAllBox(){

@@ -17,8 +17,11 @@ public class Reports {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
+
     String reportType;
+
     Date generateDate;
+
     String dateRange;
 
     @OneToMany(mappedBy = "reports")

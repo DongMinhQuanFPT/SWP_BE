@@ -9,11 +9,9 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.NumberFormat;
 
 @Data
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "`delivery_method`")
 public class DeliveryMethods {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

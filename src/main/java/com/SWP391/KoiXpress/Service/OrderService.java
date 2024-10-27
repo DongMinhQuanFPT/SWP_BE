@@ -11,14 +11,12 @@ import com.SWP391.KoiXpress.Model.request.Order.CreateOrderRequest;
 import com.SWP391.KoiXpress.Model.request.Order.UpdateOrderRequest;
 import com.SWP391.KoiXpress.Model.response.Box.CreateBoxDetailResponse;
 import com.SWP391.KoiXpress.Model.response.Order.*;
-import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Model.response.User.UserResponse;
 import com.SWP391.KoiXpress.Repository.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -88,11 +86,13 @@ public class OrderService {
 
         orders.setDeliveryDate(Date.from(LocalDate.now().plusWeeks(4).atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
-        String destinationLocation = orders.getDestinationLocation();
+        String destinationLocation = createOrderRequest.getDestinationLocation();
+
         String originLocation = createOrderRequest.getOriginLocation();
 
-        double[] destination = geoCodingService.geocoding(destinationLocation);
         double[] originCoords = geoCodingService.geocoding(originLocation);
+        double[] destination = geoCodingService.geocoding(destinationLocation);
+
         String routeOD = routingService.getFormattedRoute(originCoords[0], originCoords[1], destination[0], destination[1]);
         double distanceOD = extractDistance(routeOD);
         orders.setTotalDistance(distanceOD);
@@ -122,10 +122,10 @@ public class OrderService {
         orders.setDescribeOrder(createOrderRequest.getDescribeOrder());
         orderRepository.save(orders);
 
-        List<OrderDetails> orderDetails = new ArrayList<>();
+        List<OrderDetailService> orderDetails = new ArrayList<>();
         for (OrderDetailRequest orderDetailRequest : createOrderRequest.getOrderDetailRequestList()) {
             Map<Double, Integer> fishSizeQuantityMap = Map.of(orderDetailRequest.getSizeOfFish(), orderDetailRequest.getNumberOfFish());
-            OrderDetails orderDetail = new OrderDetails();
+            OrderDetailService orderDetail = new OrderDetailService();
 
             orderDetail.setOrders(orders);
             orderDetail.setPriceOfFish(orderDetailRequest.getPriceOfFish());
@@ -149,7 +149,7 @@ public class OrderService {
             orderDetails.add(orderDetail);
 
         }
-        for (OrderDetails orderDetail : orderDetails) {
+        for (OrderDetailService orderDetail : orderDetails) {
             totalPrice += orderDetail.getPrice(); // Cộng dồn giá
             totalBox += orderDetail.getTotalBox(); // Cộng dồn số lượng
             totalVolume += orderDetail.getTotalVolume();

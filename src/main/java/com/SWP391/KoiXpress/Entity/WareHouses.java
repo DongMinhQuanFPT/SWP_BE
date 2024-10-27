@@ -17,7 +17,9 @@ public class WareHouses {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
+
     String location;
+
     boolean isAvailable=true;
 
     @OneToMany(mappedBy = "wareHouses")

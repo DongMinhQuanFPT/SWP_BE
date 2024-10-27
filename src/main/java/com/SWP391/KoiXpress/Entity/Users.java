@@ -30,26 +30,12 @@ public class Users implements UserDetails {
     @Enumerated(EnumType.STRING)
     Role role;
 
-    @NotBlank(message = "username can not be blank!")
-    @Size(min = 6, message = "username must at least 6 characters")
-    String username;
-
-    @Pattern(
-            regexp = ".*[A-Z].*",
-            message = "Password must contain at least one uppercase letter."
-    )
-    @Size(min = 6, message = "password must be at least 6 characters!")
-    String password;
+    @Column(length = 200)
+    String image;
 
     @NotBlank(message = "fullname can not be blank!")
     @Size(min = 1, message = "fullName must be at least 1 character!")
     String fullname;
-
-    @Column(length = 200)
-    String image;
-
-    @Column(length = 200)
-    String address;
 
     @Pattern(
             regexp = "(84|0[3|5|7|8|9])\\d{8}",
@@ -63,10 +49,24 @@ public class Users implements UserDetails {
     @Column(unique = true)
     String email;
 
-    float balance = 0;
-
     @Enumerated(EnumType.STRING)
     EmailStatus emailStatus = EmailStatus.NOT_VERIFIED;
+
+    @Column(length = 200)
+    String address;
+
+    float balance = 0;
+
+    @NotBlank(message = "username can not be blank!")
+    @Size(min = 6, message = "username must at least 6 characters")
+    String username;
+
+    @Pattern(
+            regexp = ".*[A-Z].*",
+            message = "Password must contain at least one uppercase letter."
+    )
+    @Size(min = 6, message = "password must be at least 6 characters!")
+    String password;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Min(value = 0, message = "Loyalty points must be at least 0.")
