@@ -17,8 +17,8 @@ import com.SWP391.KoiXpress.Repository.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -70,6 +70,9 @@ public class OrderService {
     @Autowired
     PaymentRepository paymentRepository;
 
+    @Autowired
+    EmailService emailService;
+
     // Create
     public CreateOrderResponse create(CreateOrderRequest createOrderRequest) throws Exception {
         Users users = authenticationService.getCurrentUser();
@@ -85,11 +88,13 @@ public class OrderService {
 
         orders.setDeliveryDate(Date.from(LocalDate.now().plusWeeks(4).atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
-        String destinationLocation = orders.getDestinationLocation();
+        String destinationLocation = createOrderRequest.getDestinationLocation();
+
         String originLocation = createOrderRequest.getOriginLocation();
 
-        double[] destination = geoCodingService.geocoding(destinationLocation);
         double[] originCoords = geoCodingService.geocoding(originLocation);
+        double[] destination = geoCodingService.geocoding(destinationLocation);
+
         String routeOD = routingService.getFormattedRoute(originCoords[0], originCoords[1], destination[0], destination[1]);
         double distanceOD = extractDistance(routeOD);
         orders.setTotalDistance(distanceOD);
@@ -153,17 +158,16 @@ public class OrderService {
             totalQuantityFish += orderDetail.getNumberOfFish();// Cộng dồn thể tích
         }
         orders.setOrderDetails(orderDetails);
+        orders.setTotalBoxPrice(totalPrice);
         orders.setTotalPrice(totalPrice);
         orders.setTotalBox(totalBox);
         orders.setTotalVolume(totalVolume);
         orders.setTotalQuantity(totalQuantityFish);
         orderRepository.save(orders);
-//        double calculateDistancePrice = orders.calculateDistancePrice();
         double calculatePrice = orders.calculatePrice();
         orders.setTotalPrice(calculatePrice);
         orderRepository.save(orders);
         return modelMapper.map(orders, CreateOrderResponse.class);
-//        createOrderResponse.setPriceDistance(calculateDistancePrice);
     }
 
 
@@ -233,6 +237,12 @@ public class OrderService {
         Orders orders = orderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException("Can not found order"));
 
+        EmailDetail emailDetail = new EmailDetail();
+        emailDetail.setSubject("Thank You");
+        emailDetail.setUsers(orders.getUsers());
+        emailDetail.setLink("http://transportkoifish.online");
+        emailService.sendEmailThankYou(emailDetail);
+
         Payments payments = new Payments();
         payments.setOrders(orders);
         payments.setCreatePayment(new Date());
@@ -260,13 +270,15 @@ public class OrderService {
         transactionCUSTOMERtoMANAGER.setPayments(payments);
         transactionCUSTOMERtoMANAGER.setTransactionStatus(TransactionStatus.SUCCESS);
         transactionCUSTOMERtoMANAGER.setDescription("Customer to Manager");
-
+        float balance = manager.getBalance() + (long)(orders.getTotalPrice());
+        manager.setBalance(balance);
         setTransaction.add(transactionCUSTOMERtoMANAGER);
 
 
         payments.setTransactions(setTransaction);
         orders.setOrderStatus(OrderStatus.PAID);
         orderRepository.save(orders);
+        userRepository.save(manager);
         userRepository.save(customer);
         paymentRepository.save(payments);
     }
@@ -286,11 +298,12 @@ public class OrderService {
     }
 
 
-    public List<AllOrderByCurrentResponse> getAllOrdersByCurrentUser() {
+    public PagedResponse<AllOrderByCurrentResponse> getAllOrdersByCurrentUser(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
         Users users = authenticationService.getCurrentUser();
-        List<Orders> orders = orderRepository.findOrdersByUsers(users);
+        Page<Orders> orders = orderRepository.findOrdersByUsers(users, pageRequest);
 
-        return orders.stream()
+        List<AllOrderByCurrentResponse> responses = orders.stream()
                 .map(order -> {
                     AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
 
@@ -299,13 +312,24 @@ public class OrderService {
                     response.setDistancePrice(distancePrice);
                     response.setDiscountPrice(discountPrice);
 
-
                     return response;
                 })
                 .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED)
                 .sorted(Comparator.comparing(AllOrderByCurrentResponse::getOrderDate))
                 .collect(Collectors.toList());
+
+        Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(responses, pageRequest, orders.getTotalElements());
+
+        return new PagedResponse<>(
+                responsePage.getContent(),
+                page,
+                size,
+                responsePage.getTotalElements(),
+                responsePage.getTotalPages(),
+                responsePage.isLast()
+        );
     }
+
 
     public List<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser() {
         Users users = authenticationService.getCurrentUser();
@@ -446,6 +470,7 @@ public class OrderService {
     //
 
     //Delete
+
     public DeleteOrderResponse delete(long id) {
         Orders oldOrders = getOrderById(id);
         if (oldOrders.getOrderStatus() == OrderStatus.DELIVERED) {

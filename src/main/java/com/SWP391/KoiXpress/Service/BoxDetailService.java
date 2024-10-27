@@ -77,60 +77,65 @@ public class BoxDetailService {
     }
 
     public Map<String, Object> calculateBox(Map<Double, Integer> fishSizeQuantityMap) {
-        double remainVolume = 0;
         double totalVolume = 0;
-        double totalPrice = 0;
-        double remainingSpaceInSmallBox = 0;
-        int totalCount = 0;
 
-        // Duyệt qua từng cặp kích thước-số lượng và cộng dồn thể tích tổng
+        // Tính tổng thể tích của các con cá
         for (Map.Entry<Double, Integer> entry : fishSizeQuantityMap.entrySet()) {
-            double fishSize = entry.getKey();
-            int quantity = entry.getValue();
-            totalVolume += getFishVolume(quantity, fishSize);
-            remainVolume += getFishVolume(quantity, fishSize);
+            totalVolume += getFishVolume(entry.getValue(), entry.getKey());
         }
 
         List<Boxes> boxes = boxRepository.findAll(Sort.by(Sort.Order.desc("volume")));
-        Boxes smallestBoxes = boxes.get(boxes.size()-1);
-
         Map<String, Integer> boxCount = new LinkedHashMap<>();
 
-        for(Boxes box : boxes){
-            boxCount.put(box.getType(),0);
+        double remainingVolume = totalVolume;
+        double remainingSpaceInSmallBox = 0;
+        double totalPrice = 0;
+        int totalCount = 0;
+
+        // Khởi tạo boxCount với các loại hộp và số lượng ban đầu là 0
+        for (Boxes box : boxes) {
+            if(box.isAvailable()){
+                boxCount.put(box.getType(), 0);
+            }
         }
 
-        for(Boxes box : boxes){
-            int count = (int) (remainVolume / box.getVolume());
-            remainVolume -= count * box.getVolume();
-            boxCount.put(box.getType(), boxCount.get(box.getType())+ count);
-            if (remainVolume == 0) {
+        // Phân phối thể tích vào các hộp từ lớn đến nhỏ
+        for (Boxes box : boxes) {
+            int count = (int) (remainingVolume / box.getVolume());
+            remainingVolume -= count * box.getVolume();
+            boxCount.put(box.getType(), count);
+            totalPrice += box.getPrice() * count;
+            totalCount += count;
+
+            if (remainingVolume == 0) {
                 break;
             }
         }
-        if(remainVolume > 0 && remainVolume < smallestBoxes.getVolume()){
-            boxCount.put(smallestBoxes.getType(), boxCount.get(smallestBoxes.getType()) + 1);
-            remainingSpaceInSmallBox = smallestBoxes.getVolume() - remainVolume;
+
+        // Nếu còn thể tích dư thừa nhưng nhỏ hơn thể tích của hộp nhỏ nhất, thêm 1 hộp nhỏ
+        if (remainingVolume > 0) {
+            Boxes smallestBox = boxes.get(boxes.size() - 1);
+            boxCount.put(smallestBox.getType(), boxCount.get(smallestBox.getType()) + 1);
+            remainingSpaceInSmallBox = smallestBox.getVolume() - remainingVolume;
+            totalPrice += smallestBox.getPrice();
+            totalCount++;
         }
 
-        for (Boxes box : boxes) {
-            totalPrice += box.getPrice() * boxCount.get(box.getType());
-            totalCount += boxCount.get(box.getType());
-        }
-        Map<String, Object> boxDetails = new LinkedHashMap<>();
-
+        // Tạo response chứa thông tin chi tiết hộp
+        Map<String, Object> boxDetails = new LinkedHashMap<>(boxCount);
+        List<String> boxMessages = new ArrayList<>();
         for(Map.Entry<String, Integer> entry : boxCount.entrySet()){
-            String boxType = entry.getKey();
-            int quantityBox = entry.getValue();
-            boxDetails.put(boxType,quantityBox);
+            boxMessages.add("BoxType: "+ entry.getKey() + ", quantity: "+ entry.getValue());
         }
+        boxDetails.put("boxMessage", boxMessages);
         boxDetails.put("totalCount", totalCount);
         boxDetails.put("totalVolume", totalVolume);
-        boxDetails.put("totalPrice",totalPrice);
+        boxDetails.put("totalPrice", totalPrice);
         boxDetails.put("remainingVolume", remainingSpaceInSmallBox);
 
         return boxDetails;
     }
+
 
     public List<String> suggestFishSizes(double remainVolume){
         List<String> suggestions = new ArrayList<>();
@@ -143,7 +148,7 @@ public class BoxDetailService {
             double volume = entry.getValue();
             if (volume <= remainVolume) {
                 int fishQuantity = (int) (remainVolume / volume);
-                suggestions.add("Quantity can be added: " + fishQuantity + ", Size: "+ entry.getKey());
+                suggestions.add("The number of fish that can still be added is: " + fishQuantity + ", Size: "+ entry.getKey());
             }
         }
 
@@ -170,7 +175,7 @@ public class BoxDetailService {
             for(Map.Entry<String, Object> entry : boxDetails.entrySet()){
                 String boxType = entry.getKey();
                 Object value = entry.getValue();
-                if (boxType.equals("totalVolume") || boxType.equals("totalPrice") || boxType.equals("remainingVolume") || boxType.equals("totalCount")) {
+                if (boxType.equals("totalVolume") || boxType.equals("totalPrice") || boxType.equals("remainingVolume") || boxType.equals("totalCount") || boxType.equals("boxMessage")) {
                     continue;
                 }
                 Integer quantityBox = (Integer) value;

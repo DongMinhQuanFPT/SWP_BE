@@ -2,6 +2,7 @@ package com.SWP391.KoiXpress.Service;
 
 import com.SWP391.KoiXpress.Entity.EmailDetail;
 import com.SWP391.KoiXpress.Entity.Enum.EmailStatus;
+import com.SWP391.KoiXpress.Entity.Enum.Role;
 import com.SWP391.KoiXpress.Entity.Users;
 import com.SWP391.KoiXpress.Exception.*;
 import com.SWP391.KoiXpress.Model.request.User.CreateUserByManagerRequest;
@@ -179,7 +180,6 @@ public class UserService {
         );
     }
 
-
     public EachUserResponse getEachUserById(long id) {
         Users users = userRepository.findUsersById(id);
         if (users == null) {
@@ -191,6 +191,14 @@ public class UserService {
     public EachUserResponse getProfileUser(){
         Users users = authenticationService.getCurrentUser();
         return modelMapper.map(users, EachUserResponse.class);
+    }
+
+    public ProfileManagerResponse getProfileManager(){
+        Users manager = authenticationService.getCurrentUser();
+        if(manager.getRole() != Role.MANAGER){
+            throw new AuthException("Do not have permission");
+        }
+        return modelMapper.map(manager, ProfileManagerResponse.class);
     }
 
     public void sendAccountUser(String fullname){
@@ -205,8 +213,6 @@ public class UserService {
         }
         throw new AuthException("Account can not send");
     }
-
-
 
     private Users getUserById(long userId) {
         Users oldUsers = userRepository.findUsersById(userId);

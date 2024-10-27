@@ -11,7 +11,10 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EmailDetail {
+
     Users users;
+
     String subject;
+
     String link;
 }

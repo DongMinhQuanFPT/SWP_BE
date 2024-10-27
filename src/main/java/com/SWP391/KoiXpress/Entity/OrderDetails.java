@@ -25,11 +25,8 @@ public class OrderDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    UUID healthCertificate = UUID.randomUUID();
-
-    @NumberFormat(pattern = "#.##")
-    double priceOfFish;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    Date inspectionDate;
 
     @NotBlank(message = "nameFarm can not blank")
     String nameFarm;
@@ -37,30 +34,34 @@ public class OrderDetails {
     @NotBlank(message = "farmAddress can not blank")
     String farmAddress;
 
+    @NumberFormat(pattern = "#.##")
+    double priceOfFish;
+
     @NotBlank(message = "origin of fish should not null")
     String origin;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    Date inspectionDate;
 
     @NotBlank(message = "fishSpecies can not blank")
     String fishSpecies;
 
+    @Enumerated(EnumType.STRING)
+    HealthFishStatus healthFishStatus;
+
+    @NotBlank(message = "number fish can not blank")
     int numberOfFish;
 
     @NumberFormat(pattern = "#.##")
     double sizeOfFish;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    UUID healthCertificate = UUID.randomUUID();
 
     int totalBox;
+
     @NumberFormat(pattern = "#.##")
     double totalVolume;
+
     @NumberFormat(pattern = "#.##")
     double price;
-    //
-
-    @Enumerated(EnumType.STRING)
-    HealthFishStatus healthFishStatus;
 
     @ManyToOne
     @JoinColumn(name = "order_id")

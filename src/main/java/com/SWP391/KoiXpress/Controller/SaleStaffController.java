@@ -24,15 +24,22 @@ public class SaleStaffController {
     @Autowired
     UserService userService;
 
+
+    //////////////////////Update-Order///////////////////////////
     @PutMapping("{orderId}")
-    public ResponseEntity<UpdateOrderResponse> update(@PathVariable long orderId, @RequestBody @Valid UpdateOrderRequest orderRequest) throws Exception {
+    public ResponseEntity<UpdateOrderResponse> updateOrder(@PathVariable long orderId, @RequestBody @Valid UpdateOrderRequest orderRequest) throws Exception {
         UpdateOrderResponse updateOrder = orderService.updateBySale(orderId, orderRequest);
         return ResponseEntity.ok(updateOrder);
     }
+    //////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Send-Account///////////////////////////
     @GetMapping("/sendAccount")
     public ResponseEntity<String> sendAccountUser(@RequestBody String fullName){
         userService.sendAccountUser(fullName);
         return ResponseEntity.ok("Send email account for user success");
     }
+    /////////////////////////////////////////////////////////////
 }

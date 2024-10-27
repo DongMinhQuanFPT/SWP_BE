@@ -47,6 +47,7 @@ public class Filter extends OncePerRequestFilter {
         AntPathMatcher pathMatcher = new AntPathMatcher();
         return AUTH_PERMISSION.stream().anyMatch(pattern -> pathMatcher.match(pattern,uri));
     }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //check api do co phai la 1 api public?

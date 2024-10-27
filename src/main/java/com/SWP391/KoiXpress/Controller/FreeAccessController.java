@@ -34,6 +34,8 @@ public class FreeAccessController {
     @Autowired
     ProgressService progressService;
 
+
+    //////////////////////Get-All-Blogs///////////////////////////
     @GetMapping("/allBlog")
     public ResponseEntity<PagedResponse<AllBlogResponse>> getAllBlogs(
             @RequestParam(defaultValue = "1") int page,
@@ -41,9 +43,13 @@ public class FreeAccessController {
         PagedResponse<AllBlogResponse> blogResponses = blogService.getAllBlog(page - 1, size);
         return ResponseEntity.ok(blogResponses);
     }
+    //////////////////////////////////////////////////////////////
 
+
+
+    //////////////////////Estimate-Price-Box-Preview///////////////////////////
     @GetMapping("/calculateBoxAndSuggestFishSizes")
-    public ResponseEntity<Map<String, Object>> calculateBoxAndSuggestFishSizes(
+    public ResponseEntity<Map<String, Object>> estimatePriceBoxPreview(
             @RequestParam List<Integer> quantities,
             @RequestParam List<Double> fishSizes) {
 
@@ -60,13 +66,17 @@ public class FreeAccessController {
 
         return ResponseEntity.ok(result);
     }
+    ///////////////////////////////////////////////////////////////////////////
 
 
+
+    //////////////////////Route///////////////////////////
     @GetMapping("/route")
     public ResponseEntity<String> route(@RequestParam String startLocation, @RequestParam String endLocation) {
         try {
             double[] startCoords = geoCodingService.geocoding(startLocation);
             double[] endCoords = geoCodingService.geocoding(endLocation);
+
             String route = routingService.getFormattedRoute(startCoords[0], startCoords[1], endCoords[0], endCoords[1]);
             return ResponseEntity.ok(route);
         } catch (Exception e) {
@@ -74,12 +84,16 @@ public class FreeAccessController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error calculating route: " + e.getMessage());
         }
     }
+    /////////////////////////////////////////////////////////
 
 
+
+    //////////////////////Tracking-Order///////////////////////////
     @GetMapping("/trackingOrder")
     public ResponseEntity<List<ProgressResponse>> trackingOrder(UUID trackingOrder){
         List<ProgressResponse> progresses = progressService.trackingOrder(trackingOrder);
         return ResponseEntity.ok(progresses);
     }
+    ///////////////////////////////////////////////////////////////
 
 }

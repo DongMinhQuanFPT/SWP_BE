@@ -62,7 +62,7 @@ public class DashboardService {
         dashboardStats.put("salesCount", salesCount);
 
         //Diem tb rating fb
-        double averageRating = feedBackRepository.getAverageRating();
+        Double averageRating = feedBackRepository.getAverageRating();
         dashboardStats.put("averageRatingScore", averageRating);
 
         return dashboardStats;
