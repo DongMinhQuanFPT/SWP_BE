@@ -17,6 +17,9 @@ import com.SWP391.KoiXpress.Service.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -222,4 +225,20 @@ public class ManagerController {
         return ResponseEntity.ok(dashboardService.getOrderStatistics(filter));
     }
     //////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Get-PDF///////////////////////////
+    @GetMapping("/dashboard/export/pdf")
+    public ResponseEntity<byte[]> exportDashboardStatsToPdf() {
+        Map<String, Object> dashboardStats = dashboardService.getDashboardStats(); // Retrieve dashboard statistics
+        byte[] pdfContent = dashboardService.generateDashboardPdf(dashboardStats); // Generate PDF content
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=dashboard.pdf") // Specify the filename
+                .contentType(MediaType.APPLICATION_PDF) // Set content type for PDF
+                .body(pdfContent); // Return the PDF content
+    }
+
+    ////////////////////////////////////////////////////////////////////
 }

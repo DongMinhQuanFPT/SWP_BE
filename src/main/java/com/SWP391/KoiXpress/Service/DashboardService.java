@@ -1,6 +1,6 @@
 package com.SWP391.KoiXpress.Service;
 
-import com.SWP391.KoiXpress.Entity.DashboardReport;
+
 import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
 import com.SWP391.KoiXpress.Entity.Enum.Role;
 import com.SWP391.KoiXpress.Entity.Orders;
@@ -8,17 +8,22 @@ import com.SWP391.KoiXpress.Entity.Users;
 import com.SWP391.KoiXpress.Model.response.Order.AllOrderResponse;
 import com.SWP391.KoiXpress.Model.response.User.EachUserResponse;
 import com.SWP391.KoiXpress.Repository.*;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
+import com.itextpdf.layout.element.LineSeparator;
+import com.itextpdf.layout.properties.TextAlignment;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import java.io.ByteArrayOutputStream;
 
 @Service
 public class DashboardService {
@@ -32,13 +37,11 @@ public class DashboardService {
     @Autowired
     FeedBackRepository feedBackRepository;
 
-    @Autowired
-    DashboardReportRepository DashboardReportRepository;
+
 
     @Autowired
     private ModelMapper modelMapper;
-    @Autowired
-    private DashboardReportRepository dashboardReportRepository;
+   ;
 
     //-----------------------------------------------------------------------------------------------
     //GET DASHBOARDSTATS-----------------------------------------------------------------------------
@@ -182,23 +185,8 @@ public class DashboardService {
     //-----------------------------------------------------------------------------------------------
     //-----------------------------------------------------------------------------------------------
 
-    @Scheduled(cron = "0 0 0 * * *")
-    public void saveDashboardReport() {
-        Map<String, Object> dashboardStats = getDashboardStats();
 
-        DashboardReport report = new DashboardReport();
-        report.setReportDate(new Date());
-        report.setTotalRevenue((Double) dashboardStats.get("totalRevenue"));
-        report.setAverageOrderValue((Double) dashboardStats.get("averageOrderValue"));
-        report.setHighestOrderValue((Double) dashboardStats.get("highestOrderValue"));
-        report.setOrderCount((Long) dashboardStats.get("orders"));
-        report.setCustomersCount((Long) dashboardStats.get("customersCount"));
-        report.setSalesCount((Long) dashboardStats.get("salesCount"));
-        report.setAverageRatingScore((Double) dashboardStats.get("averageRatingScore"));
-        report.setRevenueGrowth((Double) dashboardStats.get("revenueGrowth"));
 
-        dashboardReportRepository.save(report);
-    }
 
     public List<EachUserResponse> getTopCustomersByLoyaltyPoints(int limit) {
         Pageable topCustomersPage = PageRequest.of(0, limit);
@@ -217,4 +205,62 @@ public class DashboardService {
                 .map(order -> modelMapper.map(order, AllOrderResponse.class))
                 .collect(Collectors.toList());
     }
+
+    public byte[] generateDashboardPdf(Map<String, Object> dashboardStats) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            PdfWriter writer = new PdfWriter(outputStream);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Dashboard Statistics")
+                    .setFontSize(24)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER));
+            document.add(new LineSeparator(new SolidLine()));
+            document.add(new Paragraph("\n")); // Space
+
+            addStatisticsToPdf(document, dashboardStats);
+
+            document.close();
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Error while generating PDF: " + e.getMessage(), e);
+        }
+    }
+
+    private void addStatisticsToPdf(Document document, Map<String, Object> dashboardStats) {
+        dashboardStats.forEach((key, value) -> {
+            document.add(new Paragraph(key + ": " + formatValue(value))
+                    .setFontSize(12)
+                    .setMultipliedLeading(1.5f));
+        });
+
+    }
+
+    private String formatValue(Object value) {
+        if (value == null) {
+            return "N/A";
+        }
+        if (value instanceof List) {
+            return formatList((List<?>) value);
+        } else if (value instanceof Map) {
+            return formatMap((Map<?, ?>) value);
+        } else {
+            return value.toString();
+        }
+    }
+
+
+    private String formatList(List<?> list) {
+        return list.stream().map(Object::toString).collect(Collectors.joining(", "));
+    }
+
+    private String formatMap(Map<?, ?> map) {
+        return map.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining(", "));
+    }
+
+
+
 }
