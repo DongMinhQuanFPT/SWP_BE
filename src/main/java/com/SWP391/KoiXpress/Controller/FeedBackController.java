@@ -24,26 +24,27 @@ import java.util.List;
 public class FeedBackController {
 
     @Autowired
-    FeedBackService feedBackService;
+    private FeedBackService feedBackService;
 
     @PostMapping
-    public ResponseEntity<FeedBacks> createFeedBack(@Valid @RequestBody FeedBackRequet feedBackRequet) {
-        FeedBacks newFeedBacks = feedBackService.createFeedBack(feedBackRequet);
-        return ResponseEntity.ok(newFeedBacks);
+    public ResponseEntity<FeedBackResponse> createFeedBack(@Valid @RequestBody FeedBackRequet feedBackRequet) {
+        FeedBackResponse response = feedBackService.createFeedBack(feedBackRequet);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{feedBackId}/reply")
-    @PreAuthorize("hasAuthority('SALE_STAFF')")
-    public ResponseEntity<FeedBackReply> replyToFeedBack(@PathVariable long feedBackId,
-                                          @RequestBody String replyContent,
-                                          Principal principal) {
+    @PreAuthorize("hasAuthority('SALE_STAFF') or hasAuthority('MANAGER')")
+    public ResponseEntity<FeedBackReply> replyToFeedBack(
+            @PathVariable long feedBackId,
+            @RequestBody String replyContent,
+            Principal principal) {
         String repliedBy = principal.getName();
         FeedBackReply reply = feedBackService.replyToFeedBack(feedBackId, replyContent, repliedBy);
         return ResponseEntity.ok(reply);
     }
 
-    @PreAuthorize("hasAuthority('SALE_STAFF') or (hasAuthority('MANAGER'))")
     @GetMapping("/user/{userId}/feedbacks")
+    @PreAuthorize("hasAuthority('SALE_STAFF') or hasAuthority('MANAGER')")
     public ResponseEntity<PagedResponse<FeedBackResponse>> getFeedBacksByUser(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
@@ -52,22 +53,23 @@ public class FeedBackController {
         return ResponseEntity.ok(pagedResponse);
     }
 
-
-    @PreAuthorize("hasAuthority('SALE_STAFF') or (hasAuthority('CUSTOMER') and @feedBackService.isOwner(#feedBackId))")
     @PutMapping("/{feedBackId}")
-    public ResponseEntity<FeedBacks> updateFeedBack(@PathVariable long feedBackId, @Valid @RequestBody FeedBackRequet feedBackRequet) {
+    @PreAuthorize("hasAuthority('SALE_STAFF') or (hasAuthority('CUSTOMER') and @feedBackService.isOwner(#feedBackId))")
+    public ResponseEntity<FeedBacks> updateFeedBack(
+            @PathVariable long feedBackId,
+            @Valid @RequestBody FeedBackRequet feedBackRequet) {
         FeedBacks newFeedBacks = feedBackService.updateFeedBack(feedBackId, feedBackRequet);
         return ResponseEntity.ok(newFeedBacks);
     }
 
-    @PreAuthorize("hasAuthority('SALE_STAFF') or (hasAuthority('MANAGER'))")
     @GetMapping("/order/{orderId}/feedbacks")
-    public List<FeedBackResponse> getFeedBacksByOrder(
-            @PathVariable Long orderId) {
+    @PreAuthorize("hasAuthority('SALE_STAFF') or hasAuthority('MANAGER')")
+    public List<FeedBackResponse> getFeedBacksByOrder(@PathVariable Long orderId) {
         return feedBackService.getAllFeedBacksByOrder(orderId);
     }
-    @PreAuthorize("hasAuthority('CUSTOMER')")
+
     @GetMapping("/my-feedbacks")
+    @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<PagedResponse<FeedBackResponse>> getFeedBacksByCurrentUser(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -75,9 +77,8 @@ public class FeedBackController {
         return ResponseEntity.ok(pagedResponse);
     }
 
-
-    @PreAuthorize("hasAuthority('SALE_STAFF') or (hasAuthority('CUSTOMER') and @feedBackService.isOwner(#feedBackId))")
     @DeleteMapping("/{feedBackId}")
+    @PreAuthorize("hasAuthority('SALE_STAFF') or (hasAuthority('CUSTOMER') and @feedBackService.isOwner(#feedBackId))")
     public ResponseEntity<?> deleteFeedBack(@PathVariable long feedBackId) {
         feedBackService.deleteFeedBack(feedBackId);
         return ResponseEntity.ok().build();

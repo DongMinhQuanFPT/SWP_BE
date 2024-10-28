@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -299,7 +300,7 @@ public class OrderService {
 
 
     public PagedResponse<AllOrderByCurrentResponse> getAllOrdersByCurrentUser(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users users = authenticationService.getCurrentUser();
         Page<Orders> orders = orderRepository.findOrdersByUsers(users, pageRequest);
 
@@ -332,142 +333,213 @@ public class OrderService {
 
 
     public PagedResponse<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users currentUser = authenticationService.getCurrentUser();
 
-        Page<Orders> ordersPage = orderRepository.findOrdersByUsers(currentUser, pageRequest);
+        Page<Orders> orders = orderRepository.findOrdersByUsers(currentUser, pageRequest);
 
-        Page<AllOrderByCurrentResponse> responsePage = ordersPage.map(order -> modelMapper.map(order, AllOrderByCurrentResponse.class));
+        List<AllOrderByCurrentResponse> responses = orders.stream()
+                .map(order -> {
+                    AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
 
-        return new PagedResponse<>(responsePage.getContent(), responsePage.getNumber(),
-                responsePage.getSize(), responsePage.getTotalElements(), responsePage.getTotalPages(), responsePage.isLast());
+                    double distancePrice = order.calculateDistancePrice();
+                    double discountPrice = order.calculateDiscountPrice();
+                    response.setDistancePrice(distancePrice);
+                    response.setDiscountPrice(discountPrice);
+
+                    return response;
+                })
+                .filter(order -> order.getOrderStatus() == OrderStatus.DELIVERED)
+                .sorted(Comparator.comparing(AllOrderByCurrentResponse::getOrderDate))
+                .collect(Collectors.toList());
+
+        Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(responses, pageRequest, orders.getTotalElements());
+
+        return new PagedResponse<>(
+                responsePage.getContent(),
+                page,
+                size,
+                responsePage.getTotalElements(),
+                responsePage.getTotalPages(),
+                responsePage.isLast()
+        );
     }
 
 
-    //Sale update
+    // Sale update
     public UpdateOrderResponse updateBySale(long id, UpdateOrderRequest updateOrderRequest) {
         Orders oldOrders = getOrderById(id);
         if (oldOrders.getOrderStatus() == OrderStatus.PENDING) {
             oldOrders.setOrderStatus(updateOrderRequest.getOrderStatus());
             orderRepository.save(oldOrders);
-            if(updateOrderRequest.getOrderStatus() == OrderStatus.ACCEPTED){
+
+            if (updateOrderRequest.getOrderStatus() == OrderStatus.ACCEPTED) {
                 oldOrders.setOrderStatus(OrderStatus.AWAITING_PAYMENT);
             }
+
             Orders newOrders = orderRepository.save(oldOrders);
+
+            sendOrderStatusUpdateNotification(oldOrders);
+
             return modelMapper.map(newOrders, UpdateOrderResponse.class);
         } else {
-            throw new OrderException("Can not update");
+            throw new OrderException("Cannot update");
         }
     }
 
-    //deli update
+    // Delivery update
     public UpdateOrderResponse updateOrderByDelivery(long id, UpdateOrderRequest updateOrderRequest) {
         return orderRepository.findById(id)
                 .filter(order -> order.getOrderStatus() == OrderStatus.PAID)
                 .map(order -> {
                     order.setOrderStatus(updateOrderRequest.getOrderStatus());
-                    return orderRepository.save(order);
+                    Orders updatedOrder = orderRepository.save(order);
+
+                    sendOrderStatusUpdateNotification(updatedOrder);
+
+                    return modelMapper.map(updatedOrder, UpdateOrderResponse.class);
                 })
-                .map(saveOrder -> modelMapper.map(saveOrder, UpdateOrderResponse.class))
-                .orElseThrow(() -> new OrderException("can not update"));
+                .orElseThrow(() -> new OrderException("Cannot update"));
     }
+
 
     //list nhung order dang pending
-    public List<AllOrderResponse> getListOrderPending() {
-        List<Orders> orders = orderRepository.findOrdersByOrderStatus(OrderStatus.PENDING);
-        if (orders != null) {
-            return orders.stream()
-                    .sorted(Comparator.comparing(Orders::getOrderDate))  // Sắp xếp theo orderDate
-                    .map(order -> {
-                        UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
-                        AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
-                        orderResponse.setEachUserResponse(userResponse);
-                        return orderResponse;
-                    })
-                    .collect(Collectors.toList());
-        }
-        throw new OrderException("Can found list");
+    public PagedResponse<AllOrderResponse> getListOrderPending(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.PENDING, pageRequest);
+
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
     }
 
-    public List<AllOrderResponse> getListOrderAwaitingPayment() {
-        List<Orders> orders = orderRepository.findOrdersByOrderStatus(OrderStatus.AWAITING_PAYMENT);
-        if (orders != null) {
-            return orders.stream()
-                    .sorted(Comparator.comparing(Orders::getOrderDate))  // Sắp xếp theo orderDate
-                    .map(order -> {
-                        UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
-                        AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
-                        orderResponse.setEachUserResponse(userResponse);
-                        return orderResponse;
-                    })
-                    .collect(Collectors.toList());
-        }
-        throw new OrderException("Can found list");
+    public PagedResponse<AllOrderResponse> getListOrderAwaitingPayment(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.AWAITING_PAYMENT, pageRequest);
+
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
     }
 
-    public List<AllOrderResponse> getListOrderPaid() {
-        List<Orders> orders = orderRepository.findOrdersByOrderStatus(OrderStatus.PAID);
-        if (orders != null) {
-            return orders.stream()
-                    .sorted(Comparator.comparing(Orders::getOrderDate))  // Sắp xếp theo orderDate
-                    .map(order -> {
-                        UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
-                        AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
-                        orderResponse.setEachUserResponse(userResponse);
-                        return orderResponse;
-                    })
-                    .collect(Collectors.toList());
-        }
-        throw new OrderException("Can found list");
+    public PagedResponse<AllOrderResponse> getListOrderPaid(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.PAID, pageRequest);
+
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
     }
 
-    public List<AllOrderResponse> getListOrderRejected() {
-        List<Orders> orders = orderRepository.findOrdersByOrderStatus(OrderStatus.REJECTED);
-        if (orders != null) {
-            return orders.stream()
-                    .sorted(Comparator.comparing(Orders::getOrderDate))  // Sắp xếp theo orderDate
-                    .map(order -> {
-                        UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
-                        AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
-                        orderResponse.setEachUserResponse(userResponse);
-                        return orderResponse;
-                    })
-                    .collect(Collectors.toList());
-        }
-        throw new OrderException("Can found list");
+    public PagedResponse<AllOrderResponse> getListOrderRejected(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.REJECTED, pageRequest);
+
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
     }
 
-    public List<AllOrderResponse> getListOrderShipping() {
-        List<Orders> orders = orderRepository.findOrdersByOrderStatus(OrderStatus.SHIPPING);
-        if (orders != null) {
-            return orders.stream()
-                    .sorted(Comparator.comparing(Orders::getOrderDate))  // Sắp xếp theo orderDate
-                    .map(order -> {
-                        UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
-                        AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
-                        orderResponse.setEachUserResponse(userResponse);
-                        return orderResponse;
-                    })
-                    .collect(Collectors.toList());
-        }
-        throw new OrderException("Can found list");
+    public PagedResponse<AllOrderResponse> getListOrderShipping(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.SHIPPING, pageRequest);
+
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
     }
 
+    public PagedResponse<AllOrderResponse> getListOrderDelivered(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.DELIVERED, pageRequest);
 
-    public List<AllOrderResponse> getListOrderDelivered() {
-        List<Orders> orders = orderRepository.findOrdersByOrderStatus(OrderStatus.DELIVERED);
-        if (orders != null) {
-            return orders.stream()
-                    .sorted(Comparator.comparing(Orders::getOrderDate))  // Sắp xếp theo orderDate
-                    .map(order -> {
-                        UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
-                        AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
-                        orderResponse.setEachUserResponse(userResponse);
-                        return orderResponse;
-                    })
-                    .collect(Collectors.toList());
-        }
-        throw new OrderException("Can found list");
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
     }
 
     //
@@ -502,15 +574,28 @@ public class OrderService {
         return modelMapper.map(orders, CreateOrderResponse.class);
     }
 
-    public List<AllOrderResponse> getAll(int page, int size) {
+    public PagedResponse<AllOrderResponse> getAll(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Orders> orders = orderRepository.findAll(pageRequest);
-        return orders.stream().sorted(Comparator.comparing(Orders::getOrderDate)).map(order -> {
-            UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
-            AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
-            orderResponse.setEachUserResponse(userResponse);
-            return orderResponse;
-        }).collect(Collectors.toList());
+        Page<Orders> ordersPage = orderRepository.findAll(pageRequest);
+
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .sorted(Comparator.comparing(Orders::getOrderDate))
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
     }
 
 
@@ -535,4 +620,11 @@ public class OrderService {
         throw new EntityNotFoundException("Cant find distance");
     }
 
+    private void sendOrderStatusUpdateNotification(Orders order) {
+        String customerEmail = order.getUsers().getEmail();
+        String newStatus = order.getOrderStatus().name();
+        Long orderId = order.getId();
+
+        emailService.sendEmailOrderStatusUpdate(customerEmail, orderId, newStatus);
+    }
 }

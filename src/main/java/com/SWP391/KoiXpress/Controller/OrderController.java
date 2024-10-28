@@ -1,6 +1,7 @@
 package com.SWP391.KoiXpress.Controller;
 
 import com.SWP391.KoiXpress.Model.response.Order.*;
+import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Service.OrderService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +33,10 @@ public class OrderController {
 
     //////////////////////Get-All-Order///////////////////////////
     @GetMapping("/allOrder")
-    public ResponseEntity<List<AllOrderResponse>> getAll(
+    public ResponseEntity<PagedResponse<AllOrderResponse>> getAll(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size) {
-        List<AllOrderResponse> orderResponses = orderService.getAll(page - 1, size);
+        PagedResponse<AllOrderResponse> orderResponses = orderService.getAll(page - 1, size);
         return ResponseEntity.ok(orderResponses);
     }
     //////////////////////////////////////////////////////////////
@@ -54,53 +55,56 @@ public class OrderController {
 
     //////////////////////Get-OrderList-Pending///////////////////////////
     @GetMapping("/listOrderPending")
-    public ResponseEntity<List<AllOrderResponse>> getListOrderPending(){
-        return  ResponseEntity.ok(orderService.getListOrderPending());
+    public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderPending(
+            @RequestParam( defaultValue = "1") int page,
+            @RequestParam( defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getListOrderPending(page - 1, size));
     }
-    //////////////////////////////////////////////////////////////////////
-
-
+//////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-AwaitingPayment///////////////////////////
     @GetMapping("/listOrderAwaitingPayment")
-    public ResponseEntity<List<AllOrderResponse>> getListOrderAwaitingPayment(){
-        return  ResponseEntity.ok(orderService.getListOrderAwaitingPayment());
+    public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderAwaitingPayment(
+            @RequestParam( defaultValue = "1") int page,
+            @RequestParam( defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getListOrderAwaitingPayment(page - 1, size));
     }
-    /////////////////////////////////////////////////////////////////////////////
-
-
+/////////////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Paid///////////////////////////
     @GetMapping("/listOrderPaid")
-    public ResponseEntity<List<AllOrderResponse>> getListOrderPaid(){
-        return  ResponseEntity.ok(orderService.getListOrderPaid());
+    public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderPaid(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam( defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getListOrderPaid(page - 1, size));
     }
-    //////////////////////////////////////////////////////////////////
-
-
+//////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Reject///////////////////////////
     @GetMapping("/listOrderReject")
-    public ResponseEntity<List<AllOrderResponse>> getListOrderReject(){
-        return  ResponseEntity.ok(orderService.getListOrderRejected());
+    public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderReject(
+            @RequestParam( defaultValue = "1") int page,
+            @RequestParam( defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getListOrderRejected(page - 1, size));
     }
-    /////////////////////////////////////////////////////////////////////
-
-
+/////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Shipping///////////////////////////
     @GetMapping("/listOrderShipping")
-    public ResponseEntity<List<AllOrderResponse>> getListOrderShipping(){
-        return  ResponseEntity.ok(orderService.getListOrderShipping());
+    public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderShipping(
+            @RequestParam( defaultValue = "1") int page,
+            @RequestParam( defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getListOrderShipping(page - 1, size));
     }
-    ///////////////////////////////////////////////////////////////////////
-
-
+///////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Delivered///////////////////////////
     @GetMapping("/listOrderDelivered")
-    public ResponseEntity<List<AllOrderResponse>> getListOrderDelivered(){
-        return  ResponseEntity.ok(orderService.getListOrderDelivered());
+    public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderDelivered(
+            @RequestParam( defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getListOrderDelivered(page - 1, size));
     }
-    ////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
 }

@@ -19,15 +19,16 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Orders,Long> {
     Orders findOrdersById(long Id);
 
-    Page<Orders> findOrdersByUsers(Users users, Pageable pageable);
+    @Query("SELECT o FROM Orders o WHERE o.users = :user ORDER BY o.id DESC")
+    Page<Orders> findOrdersByUsers(@Param("user") Users user, Pageable pageable);
 
-    List<Orders> findOrdersByOrderStatus(OrderStatus orderStatus);
+    Page<Orders> findOrdersByOrderStatus(OrderStatus status, Pageable pageable);
 
     @Query("SELECT o FROM Orders o ORDER BY o.totalPrice DESC")
     List<Orders> findTopOrdersByTotalPrice(Pageable pageable);
 
-    @Query("SELECT o.totalPrice FROM Orders o WHERE o.orderStatus = 'PAID'")
-    List<Double> getAllTotalPricesOfPaidOrders();
+    @Query("SELECT new map(o.id as orderId, o.totalPrice as totalPrice) FROM Orders o WHERE o.orderStatus = 'PAID'")
+    List<Map<String, Object>> getAllTotalPricesOfPaidOrders();
 
     @Query("SELECT FUNCTION('DATE', o.orderDate) AS date, COUNT(o) AS orderCount " +
             "FROM Orders o GROUP BY FUNCTION('DATE', o.orderDate) ORDER BY FUNCTION('DATE', o.orderDate) ASC")
@@ -51,20 +52,23 @@ public interface OrderRepository extends JpaRepository<Orders,Long> {
     @Query("SELECT SUM(o.totalPrice) FROM Orders o WHERE o.orderStatus = :status AND o.orderDate BETWEEN :startDate AND :endDate")
     Optional<Double> getTotalRevenueForPeriod(@Param("status") OrderStatus status, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-    // Day
-    @Query("SELECT o.orderDate AS date, o.totalPrice AS totalPrice " +
-            "FROM Orders o WHERE FUNCTION('MONTH', o.orderDate) = :month AND FUNCTION('YEAR', o.orderDate) = :year " +
-            "ORDER BY o.orderDate ASC")
-    List<Map<String, Object>> getOrderPricesByDay(@Param("month") int month, @Param("year") int year);
+    @Query("SELECT o FROM Orders o WHERE o.orderStatus = 'PAID'")
+    List<Orders> findOrdersByStatusPaid();
 
-    // Month
-    @Query("SELECT o.orderDate AS date, o.totalPrice AS totalPrice " +
-            "FROM Orders o WHERE FUNCTION('YEAR', o.orderDate) = :year " +
-            "ORDER BY o.orderDate ASC")
+    @Query("SELECT FUNCTION('DATE', o.orderDate) AS date, SUM(o.totalPrice) AS totalPrice " +
+            "FROM Orders o WHERE o.orderStatus = 'PAID' GROUP BY FUNCTION('DATE', o.orderDate) " +
+            "ORDER BY FUNCTION('DATE', o.orderDate) ASC")
+    List<Map<String, Object>> getOrderCountByDate();
+
+    @Query("SELECT FUNCTION('MONTH', o.orderDate) AS month, SUM(o.totalPrice) AS totalPrice " +
+            "FROM Orders o WHERE o.orderStatus = 'PAID' AND FUNCTION('YEAR', o.orderDate) = :year " +
+            "GROUP BY FUNCTION('MONTH', o.orderDate) ORDER BY FUNCTION('MONTH', o.orderDate) ASC")
     List<Map<String, Object>> getOrderPricesByMonth(@Param("year") int year);
 
-    // Year
-    @Query("SELECT o.orderDate AS date, o.totalPrice AS totalPrice " +
-            "FROM Orders o ORDER BY o.orderDate ASC")
+
+    @Query("SELECT FUNCTION('YEAR', o.orderDate) AS year, SUM(o.totalPrice) AS totalPrice " +
+            "FROM Orders o WHERE o.orderStatus = 'PAID' " +
+            "GROUP BY FUNCTION('YEAR', o.orderDate) ORDER BY FUNCTION('YEAR', o.orderDate) ASC")
     List<Map<String, Object>> getOrderPricesByYear();
 }
+
