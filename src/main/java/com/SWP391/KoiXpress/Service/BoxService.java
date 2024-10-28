@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -47,7 +48,25 @@ public class BoxService {
     }
 
     public List<Boxes> getAllBox(){
-        return boxRepository.findAll();
+        return boxRepository.findAll().stream()
+                .sorted(Comparator.comparing(Boxes::getVolume))
+                .toList();
+    }
+
+    public List<Boxes> getAvailableBox(){
+        return boxRepository.findAll()
+                .stream()
+                .filter(Boxes::isAvailable)
+                .sorted(Comparator.comparing(Boxes::getVolume))
+                .toList();
+    }
+
+    public List<Boxes> getNotAvailableBox(){
+        return boxRepository.findAll()
+                .stream()
+                .filter(boxes -> !boxes.isAvailable())
+                .sorted(Comparator.comparing(Boxes::getVolume))
+                .toList();
     }
 
     private Boxes findBoxById(long id){

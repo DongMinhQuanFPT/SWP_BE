@@ -138,6 +138,24 @@ public class ManagerController {
 
 
 
+    //////////////////////Get-Available-Box///////////////////////////
+    @GetMapping("/availableBox")
+    public ResponseEntity<List<Boxes>> getAvailableBox(){
+        return ResponseEntity.ok(boxService.getAvailableBox());
+    }
+    /////////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Get-NotAvailable-Box///////////////////////////
+    @GetMapping("/notAvailableBox")
+    public ResponseEntity<List<Boxes>> getNotAvailableBox(){
+        return ResponseEntity.ok(boxService.getNotAvailableBox());
+    }
+    /////////////////////////////////////////////////////////////////////
+
+
+
     //////////////////////Get-All-BoxDetail///////////////////////////
     @GetMapping("/allBoxDetail")
     public ResponseEntity<PagedResponse<AllBoxDetailResponse>> getAllBoxDetail(
@@ -199,9 +217,9 @@ public class ManagerController {
 
     //////////////////////Get-OrderStatistics///////////////////////////
     @GetMapping("/dashboard/orderStatistics")
-    public List<Map<String, Object>> getOrderStatistics(@RequestParam String filter) {
+    public ResponseEntity<List<Map<String, Object>>> getOrderStatistics(@RequestParam String filter) {
         // Call the service method and return the result
-        return dashboardService.getOrderStatistics(filter);
+        return ResponseEntity.ok(dashboardService.getOrderStatistics(filter));
     }
     //////////////////////////////////////////////////////////////
 }
