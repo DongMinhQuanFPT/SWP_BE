@@ -18,13 +18,13 @@
       "
 >
     <div style="text-align: center">
-        <h1>Play Delivery</h1>
+        <h1>KoiXpress</h1>
     </div>
 
     <h2 style="color: #4a5568; font-size: 20px">Hi [[${name}]]</h2>
 
     <p style="color: #4a5568; font-size: 16px; line-height: 24px">
-        This email is to verify your email address for your </strong>Play Delivery</strong> account.
+        This email is to verify your email address for your </strong>KoiXpress</strong> account.
     </p>
 
 
@@ -39,16 +39,22 @@
     >
         <!-- Add link for button to resetpassword page -->
         <a
-                href="#"
+                href="transportkoifish.online"
                 style="
-            display: inline-block;
-            padding: 10px 25px;
-            background-color: #3b82f6;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 16px;
-          "
+          border-radius: 5px;
+    color: #fff;
+    border: none;
+    padding: 1rem 1.2rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    transition-duration: 300ms;
+    font-weight: 500;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: rgba(249, 115, 22, 1);
+  "
+                onmouseover="this.style.backgroundColor='rgba(234, 88, 12, 1)'"
+                onmouseout="this.style.backgroundColor='rgba(249, 115, 22, 1)'"
         >[[${button}]]</a
         >
     </div>
@@ -62,7 +68,7 @@
         "
     >
         Thanks, <br />
-        Play Delivery team
+        KoiXpress team
     </p>
 
     <p
@@ -87,7 +93,7 @@
     </p>
 
     <p style="color: #718096; font-size: 14px; line-height: 20px">
-        © {{#dates.format(today, 'yyyy')}} Play Delivery. All Rights Reserved.
+        © {{#dates.format(today, 'yyyy')}} KoiXpress. All Rights Reserved.
     </p>
 </div>
 </body>

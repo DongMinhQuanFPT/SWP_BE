@@ -265,7 +265,7 @@ public class OrderService {
         setTransaction.add(transactionVNPAYtoCUSTOMER);
 
         Transactions transactionCUSTOMERtoMANAGER = new Transactions();
-        Users manager = userRepository.findUsersByRole(Role.MANAGER);
+        Users manager = userRepository.findUsersByRoleAndIsDeleted(Role.MANAGER,false);
         transactionCUSTOMERtoMANAGER.setFrom(customer);
         transactionCUSTOMERtoMANAGER.setTo(manager);
         transactionCUSTOMERtoMANAGER.setPayments(payments);

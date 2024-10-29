@@ -94,7 +94,7 @@ public class AuthenticationService implements UserDetailsService {
         }
     }
 
-    @Trimmed
+//    @Trimmed
     public LoginResponse login(LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(

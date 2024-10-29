@@ -4,6 +4,7 @@ import com.SWP391.KoiXpress.Entity.*;
 import com.SWP391.KoiXpress.Entity.Enum.HealthFishStatus;
 import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
 import com.SWP391.KoiXpress.Entity.Enum.ProgressStatus;
+import com.SWP391.KoiXpress.Exception.OrderException;
 import com.SWP391.KoiXpress.Exception.ProgressException;
 import com.SWP391.KoiXpress.Model.request.Progress.ProgressRequest;
 import com.SWP391.KoiXpress.Model.request.Progress.UpdateProgressRequest;
@@ -37,6 +38,9 @@ public class ProgressService {
 
     @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    EmailService emailService;
 
     @Autowired
     WareHouseService wareHouseService;
@@ -77,8 +81,8 @@ public class ProgressService {
     }
 
     public UpdateProgressResponse update(long id, UpdateProgressRequest updateProgressRequest) {
-        Progresses oldProgresses = progressRepository.findProgressesById(id);
-        Orders orders = orderRepository.findOrdersById(oldProgresses.getOrders().getId());
+        Progresses oldProgresses = progressRepository.findById(id).orElseThrow(()-> new ProgressException("Can not find progress"));
+        Orders orders = orderRepository.findById(oldProgresses.getOrders().getId()).orElseThrow(()-> new OrderException("Can not find order"));
         WareHouses wareHouses = wareHouseRepository.findWareHousesByLocation(orders.getNearWareHouse());
 
         if (wareHouses == null || !wareHouses.isAvailable()) {
@@ -95,9 +99,19 @@ public class ProgressService {
         } else {
             oldProgresses.setImage(updateProgressRequest.getImage());
             oldProgresses.setProgressStatus(updateProgressRequest.getProgressStatus());
-
+            if(updateProgressRequest.getProgressStatus() == ProgressStatus.WAREHOUSING){
+                oldProgresses.setWareHouses(wareHouses);
+            }
             if (updateProgressRequest.getProgressStatus() == ProgressStatus.HANDED_OVER) {
                 orders.setOrderStatus(OrderStatus.DELIVERED);
+
+                EmailDetail emailDetail = new EmailDetail();
+                emailDetail.setSubject("Thank You");
+                emailDetail.setUsers(orders.getUsers());
+                emailDetail.setLink("#");
+
+                emailService.sendEmailThankYou(emailDetail);
+
                 orderRepository.save(orders); // Lưu cập nhật đơn hàng
             }
 
@@ -105,7 +119,7 @@ public class ProgressService {
         }
 
         // Cập nhật thông tin kho hàng và lưu progress
-        oldProgresses.setWareHouses(wareHouses);
+
         wareHouseRepository.save(wareHouses);
         progressRepository.save(oldProgresses);
 
