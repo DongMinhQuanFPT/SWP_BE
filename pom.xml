@@ -139,6 +139,18 @@
 			<version>9.1.1</version> <!-- Or the latest version -->
 		</dependency>
 
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>kernel</artifactId>
+			<version>7.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>layout</artifactId>
+			<version>7.2.1</version>
+		</dependency>
+
+
 
 	</dependencies>
 

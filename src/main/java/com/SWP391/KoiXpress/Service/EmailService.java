@@ -6,6 +6,7 @@ import com.SWP391.KoiXpress.Model.response.Email.EmailResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -113,6 +114,18 @@ public class EmailService {
         }catch(MessagingException e){
             throw new EmailNotVerifiedException("Error sending  email, please check your mail again");
         }
+    }
+
+    public void sendEmailOrderStatusUpdate(String toEmail, Long orderId, String newStatus) {
+        String subject = "Order Status Update for Order #" + orderId;
+        String message = "Dear Customer,\n\nYour order #" + orderId + " status has been updated to: " + newStatus + ".\n\nThank you for using our service!";
+
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(toEmail);
+        mailMessage.setSubject(subject);
+        mailMessage.setText(message);
+
+        javaMailSender.send(mailMessage);
     }
 
 
