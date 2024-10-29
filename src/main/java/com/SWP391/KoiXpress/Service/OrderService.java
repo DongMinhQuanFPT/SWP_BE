@@ -300,14 +300,14 @@ public class OrderService {
 
 
     public PagedResponse<AllOrderByCurrentResponse> getAllOrdersByCurrentUser(int page, int size) {
-        // Sắp xếp theo ID giảm dần
+
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users users = authenticationService.getCurrentUser();
 
-        // Lấy tất cả các đơn hàng theo user
+
         Page<Orders> orders = orderRepository.findOrdersByUsers(users, pageRequest);
 
-        // Chuyển đổi đơn hàng thành phản hồi
+
         List<AllOrderByCurrentResponse> responses = orders.stream()
                 .map(order -> {
                     AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
@@ -317,11 +317,11 @@ public class OrderService {
                     response.setDiscountPrice(discountPrice);
                     return response;
                 })
-                // Lọc theo trạng thái không phải là CANCELED
-                .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED)
-                .collect(Collectors.toList()); // Không cần sắp xếp lại ở đây
 
-        // Tạo page cho phản hồi
+                .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED)
+                .collect(Collectors.toList());
+
+
         Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(responses, pageRequest, orders.getTotalElements());
 
         return new PagedResponse<>(
@@ -336,14 +336,12 @@ public class OrderService {
 
 
     public PagedResponse<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser(int page, int size) {
-        // Sắp xếp theo ID giảm dần
+
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users currentUser = authenticationService.getCurrentUser();
 
-        // Lấy tất cả các đơn hàng của người dùng theo yêu cầu
         Page<Orders> orders = orderRepository.findOrdersByUsers(currentUser, pageRequest);
 
-        // Chuyển đổi đơn hàng thành phản hồi và lọc theo trạng thái DELIVERED
         List<AllOrderByCurrentResponse> responses = orders.stream()
                 .filter(order -> order.getOrderStatus() == OrderStatus.DELIVERED)
                 .map(order -> {
@@ -354,9 +352,8 @@ public class OrderService {
                     response.setDiscountPrice(discountPrice);
                     return response;
                 })
-                .collect(Collectors.toList()); // Không cần sắp xếp lại ở đây
+                .collect(Collectors.toList());
 
-        // Tạo page cho phản hồi
         Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(responses, pageRequest, orders.getTotalElements());
 
         return new PagedResponse<>(
@@ -578,11 +575,11 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderResponse> getAll(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
         Page<Orders> ordersPage = orderRepository.findAll(pageRequest);
 
         List<AllOrderResponse> responses = ordersPage.stream()
-                .sorted(Comparator.comparing(Orders::getOrderDate))
                 .map(order -> {
                     UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
                     AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
@@ -600,6 +597,7 @@ public class OrderService {
                 ordersPage.isLast()
         );
     }
+
 
 
     private double extractDistance(String routeInfo) {
