@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
     Optional<Users> findUsersByFullname(String fullname);
 
-    Users findUsersByRole(Role role);
+    Users findUsersByRoleAndIsDeleted(Role role, boolean isDeleted);
 
     @Query("select count(a)  from Users a where a.role = :role")
     long countUsersByRole(Role role);

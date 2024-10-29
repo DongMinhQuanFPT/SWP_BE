@@ -112,6 +112,9 @@ public class UserService {
             String originPassword = createUserByManagerRequest.getPassword();
             users.setPassword(passwordEncoder.encode(originPassword));
             users.setRole(createUserByManagerRequest.getRole());
+            if(createUserByManagerRequest.getRole() == Role.MANAGER){
+                throw new AuthException("MANAGER Role can not create");
+            }
             Users newUsers = userRepository.save(users);
             return modelMapper.map(newUsers, CreateUserByManagerResponse.class);
         } catch (Exception e) {
@@ -136,6 +139,9 @@ public class UserService {
         try {
             oldUsers.setImage(updateUserByManagerRequest.getImage());
             oldUsers.setRole(updateUserByManagerRequest.getRole());
+            if(updateUserByManagerRequest.getRole()==Role.MANAGER){
+                throw new AuthException("MANAGER Role is unique");
+            }
             oldUsers.setLoyaltyPoint(updateUserByManagerRequest.getLoyaltyPoint());
             oldUsers.setDeleted(updateUserByManagerRequest.isDeleted());
             Users newUsers = userRepository.save(oldUsers);
