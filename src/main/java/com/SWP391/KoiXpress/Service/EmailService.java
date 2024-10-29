@@ -116,18 +116,6 @@ public class EmailService {
         }
     }
 
-    public void sendEmailOrderStatusUpdate(String toEmail, Long orderId, String newStatus) {
-        String subject = "Order Status Update for Order #" + orderId;
-        String message = "Dear Customer,\n\nYour order #" + orderId + " status has been updated to: " + newStatus + ".\n\nThank you for using our service!";
-
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(toEmail);
-        mailMessage.setSubject(subject);
-        mailMessage.setText(message);
-
-        javaMailSender.send(mailMessage);
-    }
-
 
     private final String MailBox_API_KEY_URL = "http://apilayer.net/api/check?access_key=18c105525047d2c536134cc9638de4f9&smtp=1&format=1";
 
