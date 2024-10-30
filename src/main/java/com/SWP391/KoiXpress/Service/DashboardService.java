@@ -154,19 +154,25 @@ public class DashboardService {
         switch (filter.toLowerCase()) {
             case "detail":
                 List<Orders> paidOrders = orderRepository.findOrdersByStatusPaid();
-                SimpleDateFormat Dateformatter = new SimpleDateFormat("dd/MM/yyyy");
+                SimpleDateFormat dateformatter = new SimpleDateFormat("dd/MM/yyyy");
 
                 return paidOrders.stream().map(order -> {
                     Map<String, Object> orderMap = new HashMap<>();
                     orderMap.put("id", order.getId());
                     orderMap.put("totalPrice", order.getTotalPrice());
-                    orderMap.put("orderDate", Dateformatter.format(order.getOrderDate()));
+                    orderMap.put("orderDate", dateformatter.format(order.getOrderDate()));
                     return orderMap;
                 }).collect(Collectors.toList());
 
             case "synthetic":
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
 
-                return orderRepository.getOrderCountByDate();
+                return orderRepository.getOrderCountByDate().stream().map(record -> {
+                    Map<String, Object> syntheticMap = new HashMap<>();
+                    syntheticMap.put("date", dateFormatter.format(record.get("date")));
+                    syntheticMap.put("count", record.get("count"));
+                    return syntheticMap;
+                }).collect(Collectors.toList());
 
             case "month":
 
