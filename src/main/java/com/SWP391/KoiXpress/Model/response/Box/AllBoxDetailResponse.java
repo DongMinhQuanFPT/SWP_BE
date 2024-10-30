@@ -13,8 +13,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AllBoxDetailResponse {
+
     long id;
+
     int quantity;
+
     OrderDetails orderDetails;
+
     Boxes boxes;
 }

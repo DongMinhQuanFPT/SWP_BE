@@ -17,6 +17,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateUserByManagerRequest {
+
     @NotBlank(message = "username can not be blank!")
     @Size(min = 6, message = "username must at least 6 character")
     String username;

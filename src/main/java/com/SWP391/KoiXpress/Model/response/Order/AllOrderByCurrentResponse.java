@@ -21,6 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AllOrderByCurrentResponse {
+
     long id;
 
     UUID trackingOrder = UUID.randomUUID();
