@@ -379,7 +379,6 @@ public class OrderService {
 
             Orders newOrders = orderRepository.save(oldOrders);
 
-            sendOrderStatusUpdateNotification(oldOrders);
 
             return modelMapper.map(newOrders, UpdateOrderResponse.class);
         } else {
@@ -395,7 +394,6 @@ public class OrderService {
                     order.setOrderStatus(updateOrderRequest.getOrderStatus());
                     Orders updatedOrder = orderRepository.save(order);
 
-                    sendOrderStatusUpdateNotification(updatedOrder);
 
                     return modelMapper.map(updatedOrder, UpdateOrderResponse.class);
                 })
@@ -619,11 +617,5 @@ public class OrderService {
         throw new EntityNotFoundException("Cant find distance");
     }
 
-    private void sendOrderStatusUpdateNotification(Orders order) {
-        String customerEmail = order.getUsers().getEmail();
-        String newStatus = order.getOrderStatus().name();
-        Long orderId = order.getId();
 
-        emailService.sendEmailOrderStatusUpdate(customerEmail, orderId, newStatus);
-    }
 }

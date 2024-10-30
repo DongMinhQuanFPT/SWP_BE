@@ -15,11 +15,15 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateBoxDetailResponse {
+
     List<BoxDetails> boxDetails;
+
     @NumberFormat(pattern = "#.##")
     double totalPrice;
+
     @NumberFormat(pattern = "#.##")
     double totalVolume;
+
     int totalCount;
 
 }

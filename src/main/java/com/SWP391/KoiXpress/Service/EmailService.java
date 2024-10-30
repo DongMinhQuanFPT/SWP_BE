@@ -2,11 +2,9 @@ package com.SWP391.KoiXpress.Service;
 
 import com.SWP391.KoiXpress.Entity.EmailDetail;
 import com.SWP391.KoiXpress.Exception.EmailNotVerifiedException;
-import com.SWP391.KoiXpress.Model.response.Email.EmailResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -93,7 +91,7 @@ public class EmailService {
         }
     }
 
-    public boolean sendEmailThankYou(EmailDetail emailDetail)  {
+    public void sendEmailThankYou(EmailDetail emailDetail)  {
         try{
             Context context = new Context();
             context.setVariable("name",emailDetail.getUsers().getEmail());
@@ -110,21 +108,9 @@ public class EmailService {
             messageHelper.setText(template,true);
             messageHelper.setSubject(emailDetail.getSubject());
             javaMailSender.send(message);
-            return true;
         }catch(MessagingException e){
             throw new EmailNotVerifiedException("Error sending  email, please check your mail again");
         }
     }
 
-
-    private final String MailBox_API_KEY_URL = "http://apilayer.net/api/check?access_key=18c105525047d2c536134cc9638de4f9&smtp=1&format=1";
-
-    public Boolean verifyEmail(String email){
-        String url = MailBox_API_KEY_URL + "&email=" + email;
-        EmailResponse emailResponse = restTemplate.getForObject(url, EmailResponse.class);
-        if(emailResponse!=null){
-            return emailResponse.isFormat_valid() && emailResponse.isMx_found();
-        }
-        return false;
-    }
 }

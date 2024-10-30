@@ -102,6 +102,9 @@ public class ProgressService {
             if(updateProgressRequest.getProgressStatus() == ProgressStatus.WAREHOUSING){
                 oldProgresses.setWareHouses(wareHouses);
             }
+            if(updateProgressRequest.getProgressStatus() == ProgressStatus.CANCELED){
+                orders.setOrderStatus(OrderStatus.CANCELED);
+            }
             if (updateProgressRequest.getProgressStatus() == ProgressStatus.HANDED_OVER) {
                 orders.setOrderStatus(OrderStatus.DELIVERED);
 

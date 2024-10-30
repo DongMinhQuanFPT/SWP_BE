@@ -7,13 +7,21 @@ import com.SWP391.KoiXpress.Entity.Enum.PaymentMethod;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateOrderRequest {
+
     @NotBlank(message = "need information of recipient")
     String recipientInfo;
 
@@ -32,5 +40,4 @@ public class CreateOrderRequest {
     MethodTransPort methodTransPort;
 
     List<OrderDetailRequest> orderDetailRequestList;
-
 }
