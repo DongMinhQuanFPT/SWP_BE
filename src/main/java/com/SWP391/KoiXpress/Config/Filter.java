@@ -44,25 +44,18 @@ public class Filter extends OncePerRequestFilter {
             "/api/authentication/login-google"
     );
 
-    public boolean isPublicAPI(String uri){
-        AntPathMatcher pathMatcher = new AntPathMatcher();
-        return AUTH_PERMISSION.stream().anyMatch(pattern -> pathMatcher.match(pattern,uri));
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
-        //check api do co phai la 1 api public?
         boolean isPublicAPI = isPublicAPI(request.getRequestURI());
         if(isPublicAPI){
             filterChain.doFilter(request, response);
         }else{
             String token = getToken(request);
             if(token == null){
-                //chan quyen truy cap
                 handlerExceptionResolver.resolveException(request,response,null,new AuthException("Empty token"));
                 return;
             }
-            //co token
             Users users;
             try{
                 users = tokenService.getUserByToken(token);
@@ -74,7 +67,6 @@ public class Filter extends OncePerRequestFilter {
                 return;
             }
 
-            //token chuẩn, cho phép truy cập, đồng thời lưu thông tin người dùng
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(users,token, users.getAuthorities());
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
@@ -82,8 +74,14 @@ public class Filter extends OncePerRequestFilter {
         }
     }
 
+    //Check api is a public api?
+    private boolean isPublicAPI(String uri){
+        AntPathMatcher pathMatcher = new AntPathMatcher();
+        return AUTH_PERMISSION.stream().anyMatch(pattern -> pathMatcher.match(pattern,uri));
+    }
 
-    public String getToken(HttpServletRequest request){
+
+    private String getToken(HttpServletRequest request){
         String authHeader = request.getHeader("Authorization");
         if(authHeader==null) return null;
         return authHeader.substring(7);

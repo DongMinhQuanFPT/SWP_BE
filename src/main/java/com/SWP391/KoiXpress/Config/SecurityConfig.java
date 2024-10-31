@@ -63,7 +63,7 @@ public class SecurityConfig {
                     .cors().and()
                     .csrf(AbstractHttpConfigurer::disable)
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // Cho phép tất cả pre-flight requests
+                            .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                             .requestMatchers("/**").permitAll()
                              .anyRequest().authenticated()
                     )
