@@ -84,19 +84,50 @@ public class DashboardService {
         Double averageRating = feedBackRepository.getAverageRating().orElse(0.0);
         dashboardStats.put("averageRatingScore", averageRating);
 
-        // Xu hướng đơn hàng theo thời gian (formatting dates)
+        // Xu hướng đơn hàng theo thời gian
         List<Map<String, Object>> ordersOverTimeList = orderRepository.getOrderCountsByDate();
-        Map<String, Long> ordersOverTime = new HashMap<>();
+        Map<String, Long> ordersOverTime = new LinkedHashMap<>();
+
+        ordersOverTimeList.sort((entry1, entry2) -> {
+            Date date1 = (Date) entry1.get("date");
+            Date date2 = (Date) entry2.get("date");
+            return date1.compareTo(date2);
+        });
+
         for (Map<String, Object> entry : ordersOverTimeList) {
             Date date = (Date) entry.get("date");
             Long orderCount = (Long) entry.get("orderCount");
             String formattedDate = dateFormatter.format(date);
             ordersOverTime.put(formattedDate, orderCount);
         }
+
         dashboardStats.put("ordersOverTime", ordersOverTime);
 
+        //ngày có đơn đầu tiên và ngày có đơn mới nhất
+        Date firstOrderDate = orderRepository.getFirstOrderDate().orElse(null);
+        Date lastOrderDate = orderRepository.getLastOrderDate().orElse(null);
+
+        dashboardStats.put("firstOrderDate", firstOrderDate != null ? dateFormatter.format(firstOrderDate) : null);
+        dashboardStats.put("lastOrderDate", lastOrderDate != null ? dateFormatter.format(lastOrderDate) : null);
+
+        // ngày hoạt động nhiều nhất
+        List<Map<String, Object>> mostActiveDays = orderRepository.getMostActiveDay();
+        if (!mostActiveDays.isEmpty()) {
+            Map<String, Object> mostActiveDay = mostActiveDays.get(0);
+            Date mostActiveDate = (Date) mostActiveDay.get("date");
+            Long orderCount = (Long) mostActiveDay.get("orderCount");
+
+            dashboardStats.put("mostActiveDay", mostActiveDate != null ? dateFormatter.format(mostActiveDate) : null);
+            dashboardStats.put("mostActiveDayOrderCount", orderCount);
+        }
+
+
         ////////////////////////////////////////////////////////////////////
-        OrderStatus paidStatus = OrderStatus.PAID;
+        OrderStatus paidStatus = OrderStatus.DELIVERED;
+
+        // Số lượng đơn hàng đã giao
+        Long countOrderDelivered = orderRepository.countOrdersByStatus(paidStatus).orElse(0L);
+        dashboardStats.put("countOrderDelivered", countOrderDelivered);
 
         // Doanh thu Tổng cho các đơn hàng đã thanh toán
         Double totalRevenue = orderRepository.getTotalRevenueByStatus(paidStatus).orElse(0.0);
@@ -170,7 +201,7 @@ public class DashboardService {
                 return orderRepository.getOrderCountByDate().stream().map(record -> {
                     Map<String, Object> syntheticMap = new HashMap<>();
                     syntheticMap.put("date", dateFormatter.format(record.get("date")));
-                    syntheticMap.put("count", record.get("count"));
+                    syntheticMap.put("totalPrice", record.get("totalPrice"));
                     return syntheticMap;
                 }).collect(Collectors.toList());
 

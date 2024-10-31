@@ -12,6 +12,7 @@ import com.SWP391.KoiXpress.Model.request.Order.UpdateOrderRequest;
 import com.SWP391.KoiXpress.Model.response.Box.CreateBoxDetailResponse;
 import com.SWP391.KoiXpress.Model.response.Order.*;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
+import com.SWP391.KoiXpress.Model.response.Progress.ProgressResponse;
 import com.SWP391.KoiXpress.Model.response.User.UserResponse;
 import com.SWP391.KoiXpress.Repository.*;
 import org.modelmapper.ModelMapper;
@@ -73,6 +74,9 @@ public class OrderService {
 
     @Autowired
     EmailService emailService;
+
+    @Autowired
+    ProgressService progressService;
 
     // Create
     public CreateOrderResponse create(CreateOrderRequest createOrderRequest) throws Exception {
@@ -300,27 +304,28 @@ public class OrderService {
 
 
     public PagedResponse<AllOrderByCurrentResponse> getAllOrdersByCurrentUser(int page, int size) {
-
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users users = authenticationService.getCurrentUser();
 
-
-        Page<Orders> orders = orderRepository.findOrdersByUsers(users,OrderStatus.CANCELED, pageRequest);
-
+        Page<Orders> orders = orderRepository.findOrdersByUsers(users, pageRequest);
 
         List<AllOrderByCurrentResponse> responses = orders.stream()
                 .map(order -> {
                     AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
+                    List<ProgressResponse> progresses = progressService.trackingOrder(order.getTrackingOrder());
+                    if (progresses == null) {
+                        progresses = new ArrayList<>();
+                    }
+
                     double distancePrice = order.calculateDistancePrice();
                     double discountPrice = order.calculateDiscountPrice();
                     response.setDistancePrice(distancePrice);
                     response.setDiscountPrice(discountPrice);
+                    response.setProgresses(progresses);
                     return response;
                 })
-
                 .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED)
                 .collect(Collectors.toList());
-
 
         Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(responses, pageRequest, orders.getTotalElements());
 
@@ -335,21 +340,28 @@ public class OrderService {
     }
 
 
-    public PagedResponse<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser(int page, int size) {
 
+    public PagedResponse<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users currentUser = authenticationService.getCurrentUser();
 
-        Page<Orders> orders = orderRepository.findOrdersByUsers(currentUser, OrderStatus.DELIVERED, pageRequest);
+        Page<Orders> orders = orderRepository.findOrdersByUsersAndStatus(currentUser, OrderStatus.DELIVERED, pageRequest);
 
         List<AllOrderByCurrentResponse> responses = orders.stream()
                 .filter(order -> order.getOrderStatus() == OrderStatus.DELIVERED)
                 .map(order -> {
                     AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
+                    List<ProgressResponse> progresses = progressService.trackingOrder(order.getTrackingOrder());
+
+                    if (progresses == null) {
+                        progresses = new ArrayList<>();
+                    }
+
                     double distancePrice = order.calculateDistancePrice();
                     double discountPrice = order.calculateDiscountPrice();
                     response.setDistancePrice(distancePrice);
                     response.setDiscountPrice(discountPrice);
+                    response.setProgresses(progresses);
                     return response;
                 })
                 .collect(Collectors.toList());
