@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface FeedBackRepository extends JpaRepository<FeedBacks, Long> {
     Page<FeedBacks> findFeedBacksByUsersId(Long userId, Pageable pageable);
+
     List<FeedBacks> findFeedBacksByOrdersId(Long orderId);
 
     FeedBacks findById(long feedId);

@@ -8,6 +8,7 @@ public enum OrderStatus {
 
     //role sale staff
     ACCEPTED,
+
     REJECTED,
 
     //don can duoc thanh toan

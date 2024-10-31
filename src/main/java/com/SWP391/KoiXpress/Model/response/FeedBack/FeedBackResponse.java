@@ -10,10 +10,15 @@ import java.util.List;
 @Data
 public class FeedBackResponse {
     long id;
+
     float ratingScore;
+
     String comment;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date createdTime;
+
     EachUserResponse eachUserResponse;
+
     List<FeedBackReplyResponse> replies;
 }

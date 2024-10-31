@@ -11,14 +11,24 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoginGoogleResponse {
     String token;
+
     long id;
+
     String username;
+
     String fullname;
+
     String image;
+
     String address;
+
     String phone;
+
     String email;
+
     Role role;
+
     long loyaltyPoint;
+
     boolean isDeleted;
 }

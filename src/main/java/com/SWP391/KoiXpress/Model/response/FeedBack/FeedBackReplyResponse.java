@@ -8,7 +8,9 @@ import java.util.Date;
 @Data
 public class FeedBackReplyResponse {
     String replyContent;
+
     String repliedBy;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date replyDate;
 }

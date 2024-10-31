@@ -540,6 +540,28 @@ public class OrderService {
         );
     }
 
+    public PagedResponse<AllOrderResponse> getListOrderCanceled(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.CANCELED, pageRequest);
+
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
+    }
     //
 
     //Delete
