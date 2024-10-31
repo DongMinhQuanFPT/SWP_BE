@@ -19,8 +19,8 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Orders,Long> {
     Orders findOrdersById(long Id);
 
-    @Query("SELECT o FROM Orders o WHERE o.users = :user ORDER BY o.id DESC")
-    Page<Orders> findOrdersByUsers(@Param("user") Users user, Pageable pageable);
+    @Query("SELECT o FROM Orders o WHERE o.users = :user AND o.orderStatus = :status ORDER BY o.id DESC")
+    Page<Orders> findOrdersByUsers(@Param("user") Users user, @Param("status") OrderStatus status, Pageable pageable);
 
     @Query("SELECT o FROM Orders o  ORDER BY o.id DESC")
     Page<Orders> findAllOrders( Pageable pageable);

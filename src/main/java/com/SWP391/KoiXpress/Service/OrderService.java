@@ -305,7 +305,7 @@ public class OrderService {
         Users users = authenticationService.getCurrentUser();
 
 
-        Page<Orders> orders = orderRepository.findOrdersByUsers(users, pageRequest);
+        Page<Orders> orders = orderRepository.findOrdersByUsers(users,OrderStatus.CANCELED, pageRequest);
 
 
         List<AllOrderByCurrentResponse> responses = orders.stream()
@@ -340,7 +340,7 @@ public class OrderService {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users currentUser = authenticationService.getCurrentUser();
 
-        Page<Orders> orders = orderRepository.findOrdersByUsers(currentUser, pageRequest);
+        Page<Orders> orders = orderRepository.findOrdersByUsers(currentUser, OrderStatus.DELIVERED, pageRequest);
 
         List<AllOrderByCurrentResponse> responses = orders.stream()
                 .filter(order -> order.getOrderStatus() == OrderStatus.DELIVERED)
@@ -379,7 +379,6 @@ public class OrderService {
 
             Orders newOrders = orderRepository.save(oldOrders);
 
-            sendOrderStatusUpdateNotification(oldOrders);
 
             return modelMapper.map(newOrders, UpdateOrderResponse.class);
         } else {
@@ -395,7 +394,6 @@ public class OrderService {
                     order.setOrderStatus(updateOrderRequest.getOrderStatus());
                     Orders updatedOrder = orderRepository.save(order);
 
-                    sendOrderStatusUpdateNotification(updatedOrder);
 
                     return modelMapper.map(updatedOrder, UpdateOrderResponse.class);
                 })
@@ -619,11 +617,5 @@ public class OrderService {
         throw new EntityNotFoundException("Cant find distance");
     }
 
-    private void sendOrderStatusUpdateNotification(Orders order) {
-        String customerEmail = order.getUsers().getEmail();
-        String newStatus = order.getOrderStatus().name();
-        Long orderId = order.getId();
 
-        emailService.sendEmailOrderStatusUpdate(customerEmail, orderId, newStatus);
-    }
 }
