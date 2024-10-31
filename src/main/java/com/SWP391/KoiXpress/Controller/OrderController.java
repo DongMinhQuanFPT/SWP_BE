@@ -108,7 +108,7 @@ public class OrderController {
 ////////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Canceled///////////////////////////
-    @GetMapping("/listOrderDelivered")
+    @GetMapping("/listOrderCanceled")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderCanceled(
             @RequestParam( defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
