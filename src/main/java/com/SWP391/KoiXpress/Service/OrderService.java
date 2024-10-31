@@ -307,7 +307,7 @@ public class OrderService {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users users = authenticationService.getCurrentUser();
 
-        List<OrderStatus> excludedStatuses = Arrays.asList(OrderStatus.CANCELED, OrderStatus.DELIVERED);
+        List<OrderStatus> excludedStatuses = Arrays.asList(OrderStatus.DELIVERED);
         Page<Orders> orders = orderRepository.findOrdersByUsers(users, excludedStatuses, pageRequest);
 
         List<AllOrderByCurrentResponse> responses = orders.stream()
@@ -325,7 +325,7 @@ public class OrderService {
                     response.setProgresses(progresses);
                     return response;
                 })
-                .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED && order.getOrderStatus() != OrderStatus.DELIVERED)
+
                 .collect(Collectors.toList());
 
         Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(responses, pageRequest, orders.getTotalElements());

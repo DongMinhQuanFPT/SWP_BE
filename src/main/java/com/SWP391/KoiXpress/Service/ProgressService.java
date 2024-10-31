@@ -94,8 +94,10 @@ public class ProgressService {
         oldProgresses.setHealthFishStatus(updateProgressRequest.getHealthFishStatus());
 
         // Kiểm tra tình trạng sức khỏe cá
+
         if (updateProgressRequest.getHealthFishStatus() == HealthFishStatus.UNHEALTHY) {
             oldProgresses.setProgressStatus(ProgressStatus.CANCELED);
+            orders.setOrderStatus(OrderStatus.CANCELED);
         } else {
             oldProgresses.setImage(updateProgressRequest.getImage());
             oldProgresses.setProgressStatus(updateProgressRequest.getProgressStatus());
