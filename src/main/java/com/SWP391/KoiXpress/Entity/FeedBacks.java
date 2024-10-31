@@ -44,7 +44,6 @@ public class FeedBacks {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date createdTime;
 
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "feedBacks")
     @JsonManagedReference
     @ToString.Exclude

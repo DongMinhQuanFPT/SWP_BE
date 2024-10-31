@@ -19,11 +19,12 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Orders,Long> {
     Orders findOrdersById(long Id);
 
-    @Query("SELECT o FROM Orders o WHERE o.users = :user ORDER BY o.id DESC")
-    Page<Orders> findOrdersByUsers(@Param("user") Users user, Pageable pageable);
+    @Query("SELECT o FROM Orders o WHERE o.users = :user AND o.orderStatus = :status ORDER BY o.id DESC")
+    Page<Orders> findOrdersByUsersAndStatus(@Param("user") Users user, @Param("status") OrderStatus status, Pageable pageable);
 
-    @Query("SELECT o FROM Orders o  ORDER BY o.id DESC")
-    Page<Orders> findAllOrders( Pageable pageable);
+    @Query("SELECT o FROM Orders o WHERE o.users = :user AND o.orderStatus NOT IN (:excludedStatuses) ORDER BY o.id DESC")
+    Page<Orders> findOrdersByUsers(@Param("user") Users user, @Param("excludedStatuses") List<OrderStatus> excludedStatuses, Pageable pageable);
+
 
     Page<Orders> findOrdersByOrderStatus(OrderStatus status, Pageable pageable);
 
@@ -37,7 +38,23 @@ public interface OrderRepository extends JpaRepository<Orders,Long> {
             "FROM Orders o GROUP BY FUNCTION('DATE', o.orderDate) ORDER BY FUNCTION('DATE', o.orderDate) ASC")
     List<Map<String, Object>> getOrderCountsByDate();
 
+    //Ngày có đơn đầu tiên
+    @Query("SELECT MIN(o.orderDate) FROM Orders o")
+    Optional<Date> getFirstOrderDate();
 
+    //Ngày có đơn mới nhất
+    @Query("SELECT MAX(o.orderDate) FROM Orders o")
+    Optional<Date> getLastOrderDate();
+
+    //Ngày có nhiều đơn nhất
+    @Query("SELECT FUNCTION('DATE', o.orderDate) AS date, COUNT(o) AS orderCount " +
+            "FROM Orders o GROUP BY FUNCTION('DATE', o.orderDate) " +
+            "ORDER BY orderCount DESC")
+    List<Map<String, Object>> getMostActiveDay();
+
+    //Số đơn đã giao thành công
+    @Query("SELECT COUNT(o) FROM Orders o WHERE o.orderStatus = :status")
+    Optional<Long> countOrdersByStatus(@Param("status") OrderStatus status);
 
     // Tổng doanh số order ở trạng thái PAID
     @Query("SELECT SUM(o.totalPrice) FROM Orders o WHERE o.orderStatus = :status")
