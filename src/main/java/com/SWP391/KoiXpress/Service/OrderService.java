@@ -190,7 +190,7 @@ public class OrderService {
             String tmnCode = "U3CV658K";
             String secretKey = "O061SWJB8ISCTPWUPLZG152JU6MT1EVU";
             String vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-            String returnUrl = "http://localhost:5173/success?orderID=" + orders.getId();
+            String returnUrl = "http://transportkoifish.online/success?orderID=" + orders.getId();
             String currCode = "VND";
 
             Map<String, String> vnpParams = new TreeMap<>();
@@ -307,7 +307,8 @@ public class OrderService {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Users users = authenticationService.getCurrentUser();
 
-        Page<Orders> orders = orderRepository.findOrdersByUsers(users, pageRequest);
+        List<OrderStatus> excludedStatuses = Arrays.asList(OrderStatus.CANCELED, OrderStatus.DELIVERED);
+        Page<Orders> orders = orderRepository.findOrdersByUsers(users, excludedStatuses, pageRequest);
 
         List<AllOrderByCurrentResponse> responses = orders.stream()
                 .map(order -> {
@@ -324,7 +325,7 @@ public class OrderService {
                     response.setProgresses(progresses);
                     return response;
                 })
-                .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED)
+                .filter(order -> order.getOrderStatus() != OrderStatus.CANCELED && order.getOrderStatus() != OrderStatus.DELIVERED)
                 .collect(Collectors.toList());
 
         Page<AllOrderByCurrentResponse> responsePage = new PageImpl<>(responses, pageRequest, orders.getTotalElements());
@@ -581,7 +582,7 @@ public class OrderService {
     public DeleteOrderResponse delete(long id) {
         Orders oldOrders = getOrderById(id);
         if (oldOrders.getOrderStatus() == OrderStatus.DELIVERED) {
-            throw new OrderException("Order are delivered, can delete");
+            throw new OrderException("Order are delivered, can not delete");
         }
         oldOrders.setOrderStatus(OrderStatus.CANCELED);
         orderRepository.save(oldOrders);

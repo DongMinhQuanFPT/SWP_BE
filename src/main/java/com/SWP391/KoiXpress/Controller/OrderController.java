@@ -15,13 +15,14 @@ import java.util.List;
 @RequestMapping("/api/order")
 @SecurityRequirement(name = "api")
 @CrossOrigin("*")
-@PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
+@PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF') or hasAuthority('CUSTOMER')")
 public class OrderController {
 
     @Autowired
     OrderService orderService;
 
     //////////////////////Get-Each-Order///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("{id}")
     public ResponseEntity<CreateOrderResponse> getEachOrder(@PathVariable long id) {
         CreateOrderResponse createOrderResponse = orderService.getEachOrderById(id);
@@ -32,6 +33,7 @@ public class OrderController {
 
 
     //////////////////////Get-All-Order///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/allOrder")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getAll(
             @RequestParam(defaultValue = "1") int page,
@@ -54,6 +56,7 @@ public class OrderController {
 
 
     //////////////////////Get-OrderList-Pending///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/listOrderPending")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderPending(
             @RequestParam( defaultValue = "1") int page,
@@ -63,6 +66,7 @@ public class OrderController {
 //////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-AwaitingPayment///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/listOrderAwaitingPayment")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderAwaitingPayment(
             @RequestParam( defaultValue = "1") int page,
@@ -72,6 +76,7 @@ public class OrderController {
 /////////////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Paid///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/listOrderPaid")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderPaid(
             @RequestParam(defaultValue = "1") int page,
@@ -81,6 +86,7 @@ public class OrderController {
 //////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Reject///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/listOrderReject")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderReject(
             @RequestParam( defaultValue = "1") int page,
@@ -90,6 +96,7 @@ public class OrderController {
 /////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Shipping///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/listOrderShipping")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderShipping(
             @RequestParam( defaultValue = "1") int page,
@@ -99,6 +106,7 @@ public class OrderController {
 ///////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Delivered///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/listOrderDelivered")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderDelivered(
             @RequestParam( defaultValue = "1") int page,
@@ -108,6 +116,7 @@ public class OrderController {
 ////////////////////////////////////////////////////////////////////////
 
     //////////////////////Get-OrderList-Canceled///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/listOrderCanceled")
     public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderCanceled(
             @RequestParam( defaultValue = "1") int page,

@@ -191,7 +191,7 @@ public class DashboardService {
                     Map<String, Object> orderMap = new HashMap<>();
                     orderMap.put("id", order.getId());
                     orderMap.put("totalPrice", order.getTotalPrice());
-                    orderMap.put("orderDate", dateformatter.format(order.getOrderDate()));
+                    orderMap.put("date", dateformatter.format(order.getOrderDate()));
                     return orderMap;
                 }).collect(Collectors.toList());
 
