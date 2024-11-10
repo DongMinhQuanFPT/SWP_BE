@@ -16,6 +16,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateProgressRequest {
 
+    long deliveryId;
+
     String image;
 
     @Enumerated(EnumType.STRING)

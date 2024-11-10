@@ -1,6 +1,6 @@
-package com.SWP391.KoiXpress.Entity;
+package com.SWP391.KoiXpress.Model.request.Vehicle;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,17 +8,16 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.NumberFormat;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DeliveryMethods {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+public class UpdateVehicleRequest {
 
-    String typeVehicle;
-
+    @Min(value = 500, message = "Volume not least than 500")
     @NumberFormat(pattern = "#.##")
-    double price;
+    double volume;
+
 }

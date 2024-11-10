@@ -92,16 +92,12 @@ public class UserService {
         }
     }
 
-    public DeleteUserByUserResponse deleteByUser(long userId) {
+    public void deleteByUser(long userId) {
         try {
             Users oldUsers = getUserById(userId);
             oldUsers.setDeleted(true);
-            Users newUsers = userRepository.save(oldUsers);
-            return modelMapper.map(newUsers, DeleteUserByUserResponse.class);
-
+            userRepository.save(oldUsers);
         } catch (Exception e) {
-            // Xử lý các lỗi khác nếu cần
-            e.printStackTrace();
             throw new EntityNotFoundException("User not found");
         }
     }
@@ -152,7 +148,7 @@ public class UserService {
         }
     }
 
-    public DeleteUserByManagerResponse deleteByManager(long userId) {
+    public void deleteByManager(long userId) {
         try {
             Users currentUsers = authenticationService.getCurrentUser();
             Users oldUsers = getUserById(userId);
@@ -160,12 +156,8 @@ public class UserService {
                 throw new AuthException("Can delete that user because user is using web");
             }
             oldUsers.setDeleted(true);
-            Users newUsers = userRepository.save(oldUsers);
-            return modelMapper.map(newUsers, DeleteUserByManagerResponse.class);
-
+            userRepository.save(oldUsers);
         } catch (Exception e) {
-            // Xử lý các lỗi khác nếu cần
-            e.printStackTrace();
             throw new EntityNotFoundException("User not found");
         }
     }
@@ -230,7 +222,4 @@ public class UserService {
         }
         return oldUsers;
     }
-
-
-
 }

@@ -1,6 +1,5 @@
 package com.SWP391.KoiXpress.Model.response.Order;
 
-
 import com.SWP391.KoiXpress.Entity.Enum.MethodTransPort;
 import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
 import com.SWP391.KoiXpress.Entity.OrderDetails;

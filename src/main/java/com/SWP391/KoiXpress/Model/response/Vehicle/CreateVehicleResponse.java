@@ -1,25 +1,23 @@
-package com.SWP391.KoiXpress.Model.response.Blog;
+package com.SWP391.KoiXpress.Model.response.Vehicle;
 
-import com.SWP391.KoiXpress.Entity.Users;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.NumberFormat;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DeleteBlogResponse {
+public class CreateVehicleResponse {
 
-    long id;
+    UUID id;
 
-    String img;
-
-    String post;
-
-    boolean isDeleted =false;
-
-    Users users;
+    @NumberFormat(pattern = "#.##")
+    double volume;
 }

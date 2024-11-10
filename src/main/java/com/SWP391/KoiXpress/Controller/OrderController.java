@@ -2,6 +2,7 @@ package com.SWP391.KoiXpress.Controller;
 
 import com.SWP391.KoiXpress.Model.response.Order.*;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
+import com.SWP391.KoiXpress.Model.response.Transaction.AllTransactionResponse;
 import com.SWP391.KoiXpress.Service.OrderService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +48,9 @@ public class OrderController {
 
     //////////////////////Delete-Order///////////////////////////
     @DeleteMapping("{id}")
-    public ResponseEntity<DeleteOrderResponse> delete(@PathVariable long id) {
-        DeleteOrderResponse deleteOrder = orderService.delete(id);
-        return ResponseEntity.ok(deleteOrder);
+    public ResponseEntity<String> delete(@PathVariable long id) {
+        orderService.delete(id);
+        return ResponseEntity.ok("Delete successfully");
     }
     /////////////////////////////////////////////////////////////
 
@@ -63,7 +64,9 @@ public class OrderController {
             @RequestParam( defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getListOrderPending(page - 1, size));
     }
-//////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+
+
 
     //////////////////////Get-OrderList-AwaitingPayment///////////////////////////
     @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
@@ -73,7 +76,9 @@ public class OrderController {
             @RequestParam( defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getListOrderAwaitingPayment(page - 1, size));
     }
-/////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////
+
+
 
     //////////////////////Get-OrderList-Paid///////////////////////////
     @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
@@ -83,7 +88,9 @@ public class OrderController {
             @RequestParam( defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getListOrderPaid(page - 1, size));
     }
-//////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////
+
+
 
     //////////////////////Get-OrderList-Reject///////////////////////////
     @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
@@ -93,7 +100,9 @@ public class OrderController {
             @RequestParam( defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getListOrderRejected(page - 1, size));
     }
-/////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+
 
     //////////////////////Get-OrderList-Shipping///////////////////////////
     @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
@@ -103,7 +112,9 @@ public class OrderController {
             @RequestParam( defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getListOrderShipping(page - 1, size));
     }
-///////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
+
+
 
     //////////////////////Get-OrderList-Delivered///////////////////////////
     @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
@@ -113,7 +124,9 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getListOrderDelivered(page - 1, size));
     }
-////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+
 
     //////////////////////Get-OrderList-Canceled///////////////////////////
     @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
@@ -123,5 +136,15 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getListOrderCanceled(page - 1, size));
     }
-////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Get-TransactionList///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
+    @GetMapping("/listTransaction")
+    public ResponseEntity<List<AllTransactionResponse>> getAllTransaction(){
+        return ResponseEntity.ok(orderService.getAllTransaction());
+    }
+    ////////////////////////////////////////////////////////////////////
 }

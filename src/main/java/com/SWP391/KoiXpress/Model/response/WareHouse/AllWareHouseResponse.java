@@ -1,7 +1,5 @@
-package com.SWP391.KoiXpress.Model.request.WareHouse;
+package com.SWP391.KoiXpress.Model.response.WareHouse;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,9 +10,12 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CreateWareHouseRequest {
+public class AllWareHouseResponse {
+    long id;
 
     String location;
 
     int maxCapacity;
+
+    int currentCapacity;
 }

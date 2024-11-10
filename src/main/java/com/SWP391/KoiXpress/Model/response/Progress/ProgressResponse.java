@@ -22,10 +22,6 @@ public class ProgressResponse {
 
     Date dateProgress;
 
-    double totalVolume;
-
-    int totalBox;
-
     boolean isInProgress;
 
     HealthFishStatus healthFishStatus;

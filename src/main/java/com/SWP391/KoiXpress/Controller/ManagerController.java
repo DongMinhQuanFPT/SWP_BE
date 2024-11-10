@@ -6,11 +6,16 @@ import com.SWP391.KoiXpress.Model.request.Box.CreateBoxRequest;
 import com.SWP391.KoiXpress.Model.request.Box.UpdateBoxRequest;
 import com.SWP391.KoiXpress.Model.request.User.CreateUserByManagerRequest;
 import com.SWP391.KoiXpress.Model.request.User.UpdateUserByManagerRequest;
+import com.SWP391.KoiXpress.Model.request.Vehicle.CreateVehicleRequest;
+import com.SWP391.KoiXpress.Model.request.Vehicle.UpdateVehicleRequest;
 import com.SWP391.KoiXpress.Model.request.WareHouse.CreateWareHouseRequest;
 import com.SWP391.KoiXpress.Model.response.Authen.LoginResponse;
 import com.SWP391.KoiXpress.Model.response.Box.AllBoxDetailResponse;
 import com.SWP391.KoiXpress.Model.response.Box.CreateBoxResponse;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
+import com.SWP391.KoiXpress.Model.response.Vehicle.CreateVehicleResponse;
+import com.SWP391.KoiXpress.Model.response.Vehicle.UpdateVehicleResponse;
+import com.SWP391.KoiXpress.Model.response.WareHouse.AllWareHouseResponse;
 import com.SWP391.KoiXpress.Model.response.WareHouse.CreateWarehouseResponse;
 import com.SWP391.KoiXpress.Model.response.User.*;
 import com.SWP391.KoiXpress.Service.*;
@@ -26,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -48,6 +54,9 @@ public class ManagerController {
 
     @Autowired
     DashboardService dashboardService;
+
+    @Autowired
+    VehicleService vehicleService;
 
 
     //////////////////////Get-Profile-Manager///////////////////////////
@@ -94,9 +103,9 @@ public class ManagerController {
 
     //////////////////////Delete-User///////////////////////////
     @DeleteMapping("/{userId}")
-    public ResponseEntity<DeleteUserByManagerResponse> deleteUserByManager(@PathVariable long userId) {
-        DeleteUserByManagerResponse deleteUser = userService.deleteByManager(userId);
-        return ResponseEntity.ok(deleteUser);
+    public ResponseEntity<String> deleteUserByManager(@PathVariable long userId) {
+        userService.deleteByManager(userId);
+        return ResponseEntity.ok("Delete successfully");
     }
     ///////////////////////////////////////////////////////////
 
@@ -193,7 +202,7 @@ public class ManagerController {
 
     //////////////////////Get-All-WareHouse-Available///////////////////////////
     @GetMapping("/wareHouse/available")
-    public ResponseEntity<List<WareHouses>> getAllWareHouseAvailable() {
+    public ResponseEntity<List<AllWareHouseResponse>> getAllWareHouseAvailable() {
         return ResponseEntity.ok(wareHouseService.getAllWareHouseAvailable());
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -202,7 +211,7 @@ public class ManagerController {
 
     //////////////////////Get-All-WareHouse-NotAvailable///////////////////////////
     @GetMapping("/wareHouse/notAvailable")
-    public ResponseEntity<List<WareHouses>> getAllWareHouseNotAvailable() {
+    public ResponseEntity<List<AllWareHouseResponse>> getAllWareHouseNotAvailable() {
         return ResponseEntity.ok(wareHouseService.getAllWareHouseNotAvailable());
     }
     ///////////////////////////////////////////////////////////////////////////////
@@ -216,6 +225,7 @@ public class ManagerController {
         return ResponseEntity.ok(stats);
     }
     //////////////////////////////////////////////////////////////
+
 
 
     //////////////////////Get-OrderStatistics///////////////////////////
@@ -241,4 +251,34 @@ public class ManagerController {
     }
 
     ////////////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Create-Vehicle///////////////////////////
+    @PostMapping("/vehicle")
+    public ResponseEntity<List<CreateVehicleResponse>> create(@Valid @RequestBody CreateVehicleRequest createVehicleRequest){
+        List<CreateVehicleResponse> vehicles = vehicleService.create(createVehicleRequest);
+        return ResponseEntity.ok(vehicles);
+    }
+    /////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Update-Vehicle///////////////////////////
+    @PutMapping("/vehicle/{vehicleId}")
+    public ResponseEntity<UpdateVehicleResponse> update(@PathVariable UUID vehicleId, @Valid @RequestBody UpdateVehicleRequest updateVehicleRequest){
+        UpdateVehicleResponse vehicles = vehicleService.update(vehicleId,updateVehicleRequest);
+        return ResponseEntity.ok(vehicles);
+    }
+    /////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Delete-Vehicle///////////////////////////
+    @DeleteMapping("/vehicle/{id}")
+    public ResponseEntity<String> delete(@PathVariable UUID id){
+        vehicleService.delete(id);
+        return ResponseEntity.ok("Delete Vehicle success");
+    }
+    /////////////////////////////////////////////////////////////
 }

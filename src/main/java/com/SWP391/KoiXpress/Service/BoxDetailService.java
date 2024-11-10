@@ -9,13 +9,12 @@ import com.SWP391.KoiXpress.Exception.BoxException;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Repository.BoxDetailRepository;
 import com.SWP391.KoiXpress.Repository.BoxRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +26,9 @@ public class BoxDetailService {
 
     @Autowired
     BoxRepository boxRepository;
+
+    @Autowired
+    ModelMapper modelMapper;
 
 
     static final Map<String, Double> FISH_SIZES = new HashMap<>();
@@ -46,7 +48,7 @@ public class BoxDetailService {
         FISH_SIZES.put("80.1-83", 100.0);
     }
 
-    public double getFishVolume(int quantity, double size) {
+    private double getFishVolume(int quantity, double size) {
         if (quantity <= 0) {
             throw new BoxException("Invalid box ");
 
@@ -77,7 +79,7 @@ public class BoxDetailService {
         return total;
     }
 
-    public Map<String, Object> calculateBox(Map<Double, Integer> fishSizeQuantityMap) {
+    private Map<String, Object> calculateBox(Map<Double, Integer> fishSizeQuantityMap) {
         double totalVolume = 0;
 
         // Tính tổng thể tích của các con cá
@@ -139,7 +141,7 @@ public class BoxDetailService {
     }
 
 
-    public List<String> suggestFishSizes(double remainVolume){
+    private List<String> suggestFishSizes(double remainVolume){
         List<String> suggestions = new ArrayList<>();
         List<Map.Entry<String, Double>> sortedFishSizes = FISH_SIZES.entrySet()
                 .stream()

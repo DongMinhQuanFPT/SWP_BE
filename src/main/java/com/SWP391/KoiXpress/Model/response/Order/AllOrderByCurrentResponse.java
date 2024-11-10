@@ -1,8 +1,6 @@
 package com.SWP391.KoiXpress.Model.response.Order;
 
-import com.SWP391.KoiXpress.Entity.Enum.MethodTransPort;
-import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
-import com.SWP391.KoiXpress.Entity.Enum.PaymentMethod;
+import com.SWP391.KoiXpress.Entity.Enum.*;
 import com.SWP391.KoiXpress.Entity.OrderDetails;
 import com.SWP391.KoiXpress.Model.response.Progress.ProgressResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;

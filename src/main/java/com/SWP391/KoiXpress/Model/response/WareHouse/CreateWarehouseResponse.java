@@ -16,5 +16,9 @@ public class CreateWarehouseResponse {
 
     String location;
 
+    int maxCapacity;
+
+    int currentCapacity;
+
     boolean isAvailable;
 }

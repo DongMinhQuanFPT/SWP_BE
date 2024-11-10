@@ -1,20 +1,21 @@
-package com.SWP391.KoiXpress.Model.request.WareHouse;
+package com.SWP391.KoiXpress.Model.request.Vehicle;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CreateWareHouseRequest {
+public class LoadOrderToVehicleRequest {
 
-    String location;
+    long wareHouseId;
 
-    int maxCapacity;
+    UUID vehicleId;
+
 }
