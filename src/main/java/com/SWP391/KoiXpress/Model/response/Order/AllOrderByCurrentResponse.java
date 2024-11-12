@@ -2,6 +2,7 @@ package com.SWP391.KoiXpress.Model.response.Order;
 
 import com.SWP391.KoiXpress.Entity.Enum.*;
 import com.SWP391.KoiXpress.Entity.OrderDetails;
+import com.SWP391.KoiXpress.Model.response.Payment.PaymentResponse;
 import com.SWP391.KoiXpress.Model.response.Progress.ProgressResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
@@ -65,6 +66,8 @@ public class AllOrderByCurrentResponse {
     MethodTransPort methodTransPort;
 
     OrderStatus orderStatus;
+
+    PaymentResponse paymentResponse;
 
     List<OrderDetails> orderDetails;
 

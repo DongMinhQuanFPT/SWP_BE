@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,8 @@ public class CustomerController {
     @Autowired
     OrderService orderService;
 
+    @Autowired
+    SimpMessagingTemplate simpMessagingTemplate;
 
     //////////////////////Get-Profile-User///////////////////////////
     @GetMapping("/profile")
@@ -84,6 +87,7 @@ public class CustomerController {
     @PostMapping("/order")
     public ResponseEntity<CreateOrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest) throws Exception {
         CreateOrderResponse order = orderService.create(createOrderRequest);
+        simpMessagingTemplate.convertAndSend("/topic/general", "CUSTOMER CREATE ORDER");
         return ResponseEntity.ok(order);
     }
     ////////////////////////////////////////////////////////////
@@ -127,6 +131,7 @@ public class CustomerController {
     @PostMapping("/transaction")
     public ResponseEntity<?> createTransaction(@RequestParam long orderId) {
         orderService.createTransactions(orderId);
+        simpMessagingTemplate.convertAndSend("/topic/general","CUSTOMER PAYMENT SUCCESS");
         return ResponseEntity.ok("Create transaction success");
     }
     //////////////////////////////////////////////////////////////////

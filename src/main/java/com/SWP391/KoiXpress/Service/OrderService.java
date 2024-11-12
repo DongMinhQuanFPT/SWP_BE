@@ -6,16 +6,19 @@ import com.SWP391.KoiXpress.Entity.Enum.*;
 import com.SWP391.KoiXpress.Exception.EntityNotFoundException;
 import com.SWP391.KoiXpress.Exception.NotFoundException;
 import com.SWP391.KoiXpress.Exception.OrderException;
+import com.SWP391.KoiXpress.Exception.ProgressException;
 import com.SWP391.KoiXpress.Model.request.Order.OrderDetailRequest;
 import com.SWP391.KoiXpress.Model.request.Order.CreateOrderRequest;
 import com.SWP391.KoiXpress.Model.request.Order.UpdateOrderRequest;
 import com.SWP391.KoiXpress.Model.response.Box.CreateBoxDetailResponse;
 import com.SWP391.KoiXpress.Model.response.Order.*;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
+import com.SWP391.KoiXpress.Model.response.Payment.PaymentResponse;
 import com.SWP391.KoiXpress.Model.response.Progress.ProgressResponse;
 import com.SWP391.KoiXpress.Model.response.Transaction.AllTransactionResponse;
 import com.SWP391.KoiXpress.Model.response.User.UserResponse;
 import com.SWP391.KoiXpress.Repository.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -81,6 +84,9 @@ public class OrderService {
 
     @Autowired
     TransactionRepository transactionRepository;
+
+    @Autowired
+    ProgressRepository progressRepository;
 
 
     public CreateOrderResponse create(CreateOrderRequest createOrderRequest) throws Exception {
@@ -151,8 +157,8 @@ public class OrderService {
 
             orderDetailRepository.save(orderDetail);
             CreateBoxDetailResponse response = boxDetailService.createBox(fishSizeQuantityMap, orderDetail);
-            BoxDetails boxDetails = modelMapper.map(response, BoxDetails.class);
-            orderDetail.setBoxDetails(boxDetails.getBoxes().getBoxDetails());
+
+            orderDetail.setBoxDetails(response.getBoxDetails());
             orderDetail.setPrice(response.getTotalPrice());
             orderDetail.setTotalBox(response.getTotalCount());
             orderDetail.setTotalVolume(response.getTotalVolume());
@@ -210,7 +216,7 @@ public class OrderService {
 
             vnpParams.put("vnp_ReturnUrl", returnUrl);
             vnpParams.put("vnp_CreateDate", formattedCreateDate);
-            vnpParams.put("vnp_IpAddr", "128.199.178.23");
+            vnpParams.put("vnp_IpAddr", "14.225.220.122");
 
             StringBuilder signDataBuilder = new StringBuilder();
             for (Map.Entry<String, String> entry : vnpParams.entrySet()) {
@@ -241,7 +247,6 @@ public class OrderService {
         throw new OrderException("Order can not payment yet");
     }
 
-
     public void createTransactions(long orderId){
         Orders orders = orderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException("Can not found order"));
@@ -250,6 +255,7 @@ public class OrderService {
         emailDetail.setSubject("Thank You");
         emailDetail.setUsers(orders.getUsers());
         emailDetail.setLink("http://transportkoifish.online");
+        emailDetail.setCreateDate(new Date());
         emailService.sendEmailThankYou(emailDetail);
 
         Payments payments = new Payments();
@@ -268,7 +274,7 @@ public class OrderService {
         transactionVNPAYtoCUSTOMER.setPayments(payments);
         transactionVNPAYtoCUSTOMER.setTransactionStatus(TransactionStatus.SUCCESS);
         transactionVNPAYtoCUSTOMER.setDescription("VNPAY to Customer");
-        long newPoint = customer.getLoyaltyPoint() + (long)(orders.getTotalPrice()*0.10);
+        long newPoint = customer.getLoyaltyPoint() + (long)(orders.getTotalPrice()*0.00001);
         customer.setLoyaltyPoint(newPoint);
         setTransaction.add(transactionVNPAYtoCUSTOMER);
 
@@ -293,11 +299,22 @@ public class OrderService {
     }
 
 
-    public List<AllTransactionResponse> getAllTransaction(){
+    public List<AllTransactionResponse> getAllTransaction() {
         List<Transactions> transactions = transactionRepository.findAll();
         return transactions
                 .stream()
-                .map(transaction -> modelMapper.map(transaction, AllTransactionResponse.class))
+                .map(transaction -> {
+                    AllTransactionResponse response = modelMapper.map(transaction, AllTransactionResponse.class);
+                    Payments payment = transaction.getPayments();
+                    Orders order = payment.getOrders();
+                    PaymentResponse paymentResponse = modelMapper.map(payment, PaymentResponse.class);
+                    OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
+                    orderResponse.setTotalPrice(order.getTotalPrice());
+                    paymentResponse.setOrderResponse(orderResponse);
+                    response.setPayments(paymentResponse);
+                    return response;
+                })
+                .filter(response -> response.getDescription().equals("Customer to Manager"))
                 .toList();
     }
 
@@ -352,8 +369,6 @@ public class OrderService {
                 responsePage.isLast()
         );
     }
-
-
 
     public PagedResponse<AllOrderByCurrentResponse> getAllOrdersDeliveredByCurrentUser(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -413,7 +428,7 @@ public class OrderService {
 
     public UpdateOrderResponse updateOrderByDelivery(long id, UpdateOrderRequest updateOrderRequest) {
         Orders orders = orderRepository.findById(id)
-                .filter(order -> order.getOrderStatus() == OrderStatus.PAID)
+                .filter(order -> order.getOrderStatus() == OrderStatus.BOOKING)
                 .orElseThrow(() -> new OrderException("Cannot update"));
         orders.setOrderStatus(updateOrderRequest.getOrderStatus());
         Orders updatedOrder = orderRepository.save(orders);
@@ -443,6 +458,28 @@ public class OrderService {
         );
     }
 
+    public PagedResponse<AllOrderResponse> getListOrderBooking(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.BOOKING, pageRequest);
+
+        List<AllOrderResponse> responses = ordersPage.stream()
+                .map(order -> {
+                    UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
+                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    orderResponse.setEachUserResponse(userResponse);
+                    return orderResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                page,
+                size,
+                ordersPage.getTotalElements(),
+                ordersPage.getTotalPages(),
+                ordersPage.isLast()
+        );
+    }
 
     public PagedResponse<AllOrderResponse> getListOrderAwaitingPayment(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -467,7 +504,6 @@ public class OrderService {
         );
     }
 
-
     public PagedResponse<AllOrderResponse> getListOrderPaid(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.PAID, pageRequest);
@@ -490,7 +526,6 @@ public class OrderService {
                 ordersPage.isLast()
         );
     }
-
 
     public PagedResponse<AllOrderResponse> getListOrderRejected(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -515,7 +550,6 @@ public class OrderService {
         );
     }
 
-
     public PagedResponse<AllOrderResponse> getListOrderShipping(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.SHIPPING, pageRequest);
@@ -538,7 +572,6 @@ public class OrderService {
                 ordersPage.isLast()
         );
     }
-
 
     public PagedResponse<AllOrderResponse> getListOrderDelivered(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -563,14 +596,18 @@ public class OrderService {
         );
     }
 
-    public PagedResponse<AllOrderResponse> getListOrderCanceled(int page, int size) {
+    public PagedResponse<AllOrderCanceledResponse> getListOrderCanceled(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.CANCELED, pageRequest);
 
-        List<AllOrderResponse> responses = ordersPage.stream()
+        List<AllOrderCanceledResponse> responses = ordersPage.stream()
                 .map(order -> {
                     UserResponse userResponse = modelMapper.map(order.getUsers(), UserResponse.class);
-                    AllOrderResponse orderResponse = modelMapper.map(order, AllOrderResponse.class);
+                    AllOrderCanceledResponse orderResponse = modelMapper.map(order, AllOrderCanceledResponse.class);
+                    List<Progresses> progresses = progressRepository.findProgressesByOrdersId(orderResponse.getId())
+                            .orElseThrow(()->new ProgressException("Can not found"));
+                    String reason = progresses.stream().map(Progresses::getFailure_reason).filter(Objects::nonNull).findFirst().orElse(null);
+                    orderResponse.setFailure_reason(reason);
                     orderResponse.setEachUserResponse(userResponse);
                     return orderResponse;
                 })
@@ -586,7 +623,6 @@ public class OrderService {
         );
     }
 
-
     public void delete(long id) {
         Orders oldOrders = getOrderById(id);
         if (oldOrders.getOrderStatus() == OrderStatus.DELIVERED) {
@@ -596,7 +632,6 @@ public class OrderService {
         orderRepository.save(oldOrders);
     }
 
-
     public Orders getOrderById(long id) {
         Orders oldOrders = orderRepository.findOrdersById(id);
         if (oldOrders == null || oldOrders.getOrderStatus() == OrderStatus.CANCELED) {
@@ -605,7 +640,6 @@ public class OrderService {
         return oldOrders;
     }
 
-
     public CreateOrderResponse getEachOrderById(long id) {
         Orders orders = orderRepository.findOrdersById(id);
         if (orders == null) {
@@ -613,7 +647,6 @@ public class OrderService {
         }
         return modelMapper.map(orders, CreateOrderResponse.class);
     }
-
 
     public PagedResponse<AllOrderResponse> getAll(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -639,7 +672,6 @@ public class OrderService {
         );
     }
 
-
     private double extractDistance(String routeInfo) {
         String[] lines = routeInfo.split("\n");
         String totalDistance = null;
@@ -658,6 +690,5 @@ public class OrderService {
         }
         throw new EntityNotFoundException("Cant find distance");
     }
-
 
 }

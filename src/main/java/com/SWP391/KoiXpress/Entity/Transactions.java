@@ -32,6 +32,7 @@ public class Transactions {
     @JoinColumn(name = "payment_id")
     Payments payments;
 
+    @Enumerated(EnumType.STRING)
     TransactionStatus transactionStatus;
 
     String description;

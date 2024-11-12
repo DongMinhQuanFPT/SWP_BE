@@ -41,7 +41,8 @@ public class Filter extends OncePerRequestFilter {
             "/api/free-access/**",
             "/api/authentication/register",
             "/api/authentication/forgot-password",
-            "/api/authentication/login-google"
+            "/api/authentication/login-google",
+            "/websocket/**"
     );
 
 

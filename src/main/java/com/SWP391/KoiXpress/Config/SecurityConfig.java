@@ -73,19 +73,4 @@ public class SecurityConfig {
                     .build();
         }
 
-    @Configuration
-    public class FirebaseConfig {
-
-        @Bean
-        public FirebaseApp firebaseInit() throws IOException {
-            // Update the path to the correct service account JSON file
-            InputStream serviceAccount = new ClassPathResource("koi-fish-delivery-firebase-adminsdk-hsria-f878099696.json").getInputStream();
-
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
-            return FirebaseApp.initializeApp(options);
-        }
-    }
 }

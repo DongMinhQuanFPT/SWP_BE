@@ -1,8 +1,10 @@
 package com.SWP391.KoiXpress.Model.response.Transaction;
 
 import com.SWP391.KoiXpress.Entity.Enum.TransactionStatus;
-import com.SWP391.KoiXpress.Entity.Payments;
-import com.SWP391.KoiXpress.Entity.Users;
+import com.SWP391.KoiXpress.Model.response.Payment.PaymentResponse;
+import com.SWP391.KoiXpress.Model.response.User.EachUserResponse;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,12 +20,13 @@ import java.util.UUID;
 public class AllTransactionResponse {
     UUID id;
 
-    Users from;
+    EachUserResponse from;
 
-    Users to;
+    EachUserResponse to;
 
-    Payments payments;
+    PaymentResponse payments;
 
+    @Enumerated(EnumType.STRING)
     TransactionStatus transactionStatus;
 
     String description;

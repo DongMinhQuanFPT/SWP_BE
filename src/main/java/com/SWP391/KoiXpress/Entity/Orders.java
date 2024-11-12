@@ -104,10 +104,6 @@ public class Orders {
     @EqualsAndHashCode.Exclude
     Payments payments;
 
-//    @ManyToOne
-//    @JoinColumn(name = "vehicle_id")
-//    Vehicles vehicles;
-
     @ManyToOne
     @JoinColumn(name = "warehouse_id")
     WareHouses wareHouses;

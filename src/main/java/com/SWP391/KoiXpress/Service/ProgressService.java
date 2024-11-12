@@ -2,7 +2,6 @@ package com.SWP391.KoiXpress.Service;
 
 import com.SWP391.KoiXpress.Entity.*;
 import com.SWP391.KoiXpress.Entity.Enum.*;
-import com.SWP391.KoiXpress.Exception.NotFoundException;
 import com.SWP391.KoiXpress.Exception.OrderException;
 import com.SWP391.KoiXpress.Exception.ProgressException;
 import com.SWP391.KoiXpress.Model.request.Progress.DeleteProgressRequest;
@@ -46,7 +45,7 @@ public class ProgressService {
     EmailService emailService;
 
     @Autowired
-    WareHouseService wareHouseService;
+    AuthenticationService authenticationService;
 
 
     public List<ProgressResponse> create(ProgressRequest progressRequest) {
@@ -57,12 +56,12 @@ public class ProgressService {
         }
         if (orders.getOrderStatus() == OrderStatus.DELIVERED) {
             throw new ProgressException("Order had been delivered");
+
         }
-        if (orders.getOrderStatus() == OrderStatus.BOOKING) {
+        if (orders.getOrderStatus() == OrderStatus.SHIPPING) {
             List<ProgressResponse> progresses = new ArrayList<>();
             for (int i = 0; i < 5; i++) {
                 Progresses progress = new Progresses();
-                orders.setOrderStatus(OrderStatus.SHIPPING);
                 progress.setOrders(orders);
                 progressRepository.save(progress);
                 ProgressResponse response = new ProgressResponse();
@@ -82,11 +81,10 @@ public class ProgressService {
 
     public List<ProgressResponse> trackingOrder(UUID trackingOrder) {
         List<Progresses> progresses = progressRepository.findProgressesByTrackingOrderAndStatusNotNull(trackingOrder);
-            return progresses.stream()
-                    .map(progress -> modelMapper.map(progress, ProgressResponse.class))
-                    .collect(Collectors.toList());
+        return progresses.stream()
+                .map(progress -> modelMapper.map(progress, ProgressResponse.class))
+                .collect(Collectors.toList());
     }
-
 
     public UpdateProgressResponse update(long id, UpdateProgressRequest updateProgressRequest) {
 
@@ -98,9 +96,7 @@ public class ProgressService {
         Orders orders = orderRepository.findById(oldProgresses.getOrders().getId())
                 .orElseThrow(() -> new OrderException("Cannot find order"));
 
-        // Retrieve the delivery user, or throw an exception if not found
-        Users delivery = userRepository.findUsersByIdAndRoleAndIsDeleted(id, Role.DELIVERING_STAFF, false)
-                .orElseThrow(() -> new NotFoundException("Cannot find delivery staff"));
+        Users delivery = authenticationService.getCurrentUser();
 
         // Retrieve warehouse based on order's nearby warehouse
         WareHouses wareHouses = wareHouseRepository.findWareHousesByLocation(orders.getNearWareHouse());
@@ -180,6 +176,7 @@ public class ProgressService {
         progress.setVehicleType(VehicleType.DELIVERY_TO_RECEIVER);
         warehouse.setCurrentCapacity(warehouse.getCurrentCapacity() - order.getTotalBox());
         progress.setWareHouses(warehouse);
+        wareHouseRepository.save(warehouse);
     }
 
     private void handleHandedOverProgress(Orders order) {
@@ -191,7 +188,8 @@ public class ProgressService {
         EmailDetail emailDetail = new EmailDetail();
         emailDetail.setSubject("Thank You");
         emailDetail.setUsers(order.getUsers());
-        emailDetail.setLink("#"); // Placeholder for actual link
+        emailDetail.setLink("http://transportkoifish.online");
+        emailDetail.setCreateDate(new Date());
         emailService.sendEmailThankYou(emailDetail);
     }
 
@@ -203,5 +201,7 @@ public class ProgressService {
         progresses.getOrders().setOrderStatus(OrderStatus.CANCELED);
         progressRepository.save(progresses);
     }
+
+
 
 }
