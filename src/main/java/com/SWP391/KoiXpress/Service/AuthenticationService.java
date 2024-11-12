@@ -36,6 +36,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 
 public class AuthenticationService implements UserDetailsService {
@@ -76,6 +78,7 @@ public class AuthenticationService implements UserDetailsService {
             emailDetail.setUsers(newUsers);
             emailDetail.setSubject("Verify your email");
             emailDetail.setLink("#");
+            emailDetail.setCreateDate(new Date());
             boolean emailSent =  emailService.sendEmailVerify(emailDetail);
             if(emailSent) {
                 newUsers.setEmailStatus(EmailStatus.VERIFIED);
@@ -122,6 +125,7 @@ public class AuthenticationService implements UserDetailsService {
         emailDetail.setUsers(users);
         emailDetail.setSubject("Reset Password");
         emailDetail.setLink("http://transportkoifish.online/reset-password?token=" + token);
+        emailDetail.setCreateDate(new Date());
         emailService.sendEmailResetPassword(emailDetail);
 
     }
@@ -158,12 +162,13 @@ public class AuthenticationService implements UserDetailsService {
             String email = decodedToken.getEmail();
             Users user = userRepository.findUsersByEmail(email);
             String image = decodedToken.getPicture();
+            String name = decodedToken.getName();
 
             if (user == null) {
                 Users newUser = new Users();
                 newUser.setFullname(decodedToken.getName() != null ? decodedToken.getName() : "Unknown User");
                 newUser.setEmail(email);
-                newUser.setUsername(email);
+                newUser.setUsername(name);
                 newUser.setRole(Role.CUSTOMER);
                 newUser.setPassword(null);
                 newUser.setPhone(null);

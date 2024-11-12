@@ -7,6 +7,7 @@ import com.SWP391.KoiXpress.Service.OrderService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,9 @@ public class OrderController {
 
     @Autowired
     OrderService orderService;
+
+    @Autowired
+    SimpMessagingTemplate simpMessagingTemplate;
 
     //////////////////////Get-Each-Order///////////////////////////
     @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
@@ -131,10 +135,22 @@ public class OrderController {
     //////////////////////Get-OrderList-Canceled///////////////////////////
     @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
     @GetMapping("/listOrderCanceled")
-    public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderCanceled(
+    public ResponseEntity<PagedResponse<AllOrderCanceledResponse>> getListOrderCanceled(
             @RequestParam( defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getListOrderCanceled(page - 1, size));
+    }
+    ////////////////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////Get-OrderList-Canceled///////////////////////////
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('DELIVERING_STAFF') or hasAuthority('SALE_STAFF')")
+    @GetMapping("/listOrderBooking")
+    public ResponseEntity<PagedResponse<AllOrderResponse>> getListOrderBooking(
+            @RequestParam( defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getListOrderBooking(page - 1, size));
     }
     ////////////////////////////////////////////////////////////////////////
 

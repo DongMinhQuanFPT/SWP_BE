@@ -27,6 +27,26 @@
         This email is to verify your email address for your </strong>KoiXpress</strong> account.
     </p>
 
+    <!-- Add a table with email and password -->
+    <div>
+        <table
+                style="
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            font-size: 16px;
+            color: #4a5568;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          "
+        >
+            <tr>
+                <td style="padding: 8px 0; font-weight: bold">Order Tracking:</td>
+                <td style="padding: 8px 0">[[${orderTracking}]]</td>
+            </tr>
+        </table>
+    </div>
 
     <div
             style="
@@ -37,7 +57,7 @@
           align-items: center;
         "
     >
-        <!-- Add link for button to resetpassword page -->
+        <!-- Add link for button to login page -->
         <a th:href="${link}" class="btn-primary" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #f1556c; margin: 0; border-color: #f1556c; border-style: solid; border-width: 8px 16px;">[[${button}]]</a>
     </div>
 

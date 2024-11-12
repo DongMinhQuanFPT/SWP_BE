@@ -1,5 +1,6 @@
 package com.SWP391.KoiXpress.Repository;
 
+import com.SWP391.KoiXpress.Entity.Blogs;
 import com.SWP391.KoiXpress.Entity.Enum.Role;
 import com.SWP391.KoiXpress.Entity.Users;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,4 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
     @Query("SELECT u FROM Users u WHERE u.role = :role ORDER BY u.loyaltyPoint DESC")
     List<Users> findTopCustomersByLoyaltyPoints(@Param("role") Role role, Pageable pageable);
-
-
 }

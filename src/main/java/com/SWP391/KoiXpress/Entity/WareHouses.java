@@ -33,10 +33,10 @@ public class WareHouses {
     @EqualsAndHashCode.Exclude
     List<Progresses> progresses;
 
-    @OneToMany(mappedBy = "wareHouses")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    Set<Vehicles> vehiclesSet;
+//    @OneToMany(mappedBy = "wareHouses")
+//    @ToString.Exclude
+//    @EqualsAndHashCode.Exclude
+//    Set<Vehicles> vehiclesSet;
 
     @OneToMany(mappedBy = "wareHouses", cascade = CascadeType.ALL)
     @ToString.Exclude

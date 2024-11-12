@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,6 +71,7 @@ public class UserService {
             emailDetail.setUsers(newUsers);
             emailDetail.setSubject("Update Email");
             emailDetail.setLink("#");
+            emailDetail.setCreateDate(new Date());
             boolean emailSend = emailService.sendEmailVerify(emailDetail);
             if (emailSend) {
                 //gui email xac thuc
@@ -207,6 +209,7 @@ public class UserService {
             emailDetail.setUsers(account);
             emailDetail.setLink("http://transportkoifish.online/login?token=" + token);
             emailDetail.setSubject("Account Info");
+            emailDetail.setCreateDate(new Date());
             emailService.sendEmailAccount(emailDetail);
         }
         throw new AuthException("Account can not send");

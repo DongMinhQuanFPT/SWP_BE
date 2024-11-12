@@ -1,5 +1,6 @@
 package com.SWP391.KoiXpress.Service;
 
+import com.SWP391.KoiXpress.Entity.EmailDetail;
 import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
 import com.SWP391.KoiXpress.Entity.Orders;
 import com.SWP391.KoiXpress.Entity.WareHouses;
@@ -16,6 +17,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -30,6 +32,9 @@ public class WareHouseService {
     @Autowired
     ModelMapper modelMapper;
 
+    @Autowired
+    EmailService emailService;
+
     public CreateWarehouseResponse create(CreateWareHouseRequest createWareHouseRequest){
         WareHouses wareHouses = new WareHouses();
         wareHouses.setLocation(createWareHouseRequest.getLocation());
@@ -40,7 +45,7 @@ public class WareHouseService {
 
     public boolean delete(long id){
         WareHouses wareHouses = wareHouseRepository.findWaresHouseById(id);
-        if(wareHouses.getCurrentCapacity() < 0){
+        if(wareHouses.getCurrentCapacity() == 0){
             wareHouses.setAvailable(false);
             wareHouseRepository.save(wareHouses);
             return true;
@@ -99,6 +104,15 @@ public class WareHouseService {
             order.setOrderStatus(OrderStatus.BOOKING);
 
             orderRepository.save(order);
+
+            EmailDetail emailDetail = new EmailDetail();
+            emailDetail.setSubject("Order Tracking Code");
+            emailDetail.setUsers(order.getUsers());
+            emailDetail.setCreateDate(new Date());
+            emailDetail.setLink("http://transportkoifish.online/order-search");
+            emailDetail.setOrderTracking(order.getTrackingOrder());
+            emailService.sendEmailTrackingOrder(emailDetail);
+
             wareHouseRepository.save(wareHouse);
 
             return true;
