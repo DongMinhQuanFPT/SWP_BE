@@ -1,8 +1,15 @@
 package com.SWP391.KoiXpress.Service;
 
+import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
+import com.SWP391.KoiXpress.Entity.Orders;
 import com.SWP391.KoiXpress.Entity.WareHouses;
+import com.SWP391.KoiXpress.Exception.NotFoundException;
+import com.SWP391.KoiXpress.Exception.OrderException;
+import com.SWP391.KoiXpress.Exception.WareHouseException;
 import com.SWP391.KoiXpress.Model.request.WareHouse.CreateWareHouseRequest;
+import com.SWP391.KoiXpress.Model.response.WareHouse.AllWareHouseResponse;
 import com.SWP391.KoiXpress.Model.response.WareHouse.CreateWarehouseResponse;
+import com.SWP391.KoiXpress.Model.response.WareHouse.UpdateWareHouseRequest;
 import com.SWP391.KoiXpress.Repository.OrderRepository;
 import com.SWP391.KoiXpress.Repository.WareHouseRepository;
 import org.modelmapper.ModelMapper;
@@ -26,21 +33,77 @@ public class WareHouseService {
     public CreateWarehouseResponse create(CreateWareHouseRequest createWareHouseRequest){
         WareHouses wareHouses = new WareHouses();
         wareHouses.setLocation(createWareHouseRequest.getLocation());
+        wareHouses.setMaxCapacity(createWareHouseRequest.getMaxCapacity());
         wareHouseRepository.save(wareHouses);
         return modelMapper.map(wareHouses, CreateWarehouseResponse.class);
     }
 
-    public void delete(long id){
+    public boolean delete(long id){
         WareHouses wareHouses = wareHouseRepository.findWaresHouseById(id);
-        wareHouses.setAvailable(false);
+        if(wareHouses.getCurrentCapacity() < 0){
+            wareHouses.setAvailable(false);
+            wareHouseRepository.save(wareHouses);
+            return true;
+        }
+        return false;
+    }
+
+    public void update(UpdateWareHouseRequest request){
+        WareHouses wareHouses = wareHouseRepository.findWaresHouseById(request.getId());
+        wareHouses.setMaxCapacity(request.getMaxCapacity());
+        wareHouses.setAvailable(request.isAvailable());
         wareHouseRepository.save(wareHouses);
     }
 
-    public List<WareHouses> getAllWareHouseAvailable(){
-        return wareHouseRepository.findByIsAvailableTrue();
+    public List<AllWareHouseResponse> getAllWareHouseAvailable(){
+        List<WareHouses> wareHouses = wareHouseRepository.findByIsAvailableTrue();
+        return wareHouses
+                .stream()
+                .map(wareHouse->modelMapper.map(wareHouse, AllWareHouseResponse.class))
+                .toList();
     }
 
-    public List<WareHouses> getAllWareHouseNotAvailable(){
-        return wareHouseRepository.findByIsAvailableFalse();
+    public List<AllWareHouseResponse> getAllWareHouseNotAvailable(){
+        List<WareHouses> wareHouses = wareHouseRepository.findByIsAvailableFalse();
+        return wareHouses
+                .stream()
+                .map(wareHouse->modelMapper.map(wareHouse, AllWareHouseResponse.class))
+                .toList();
+    }
+
+    public boolean bookingSlot(long id, long orderId) {
+        WareHouses wareHouse = wareHouseRepository.findById(id)
+                .orElseThrow(()->new NotFoundException("Can not found WareHouse"));
+
+        if (!wareHouse.isAvailable()) {
+            throw new WareHouseException("WareHouse are not Available");
+        }
+
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(()->new OrderException("Can not found Order"));
+
+        if(!wareHouse.getLocation().equals(order.getNearWareHouse())){
+            throw new WareHouseException("Warehouse location does not match the order's nearest warehouse");
+        }
+
+        if(order.getOrderStatus()!= OrderStatus.PAID){
+            throw new WareHouseException("Not eligible for booking");
+        }
+
+        int slot = order.getTotalBox() + wareHouse.getCurrentCapacity();
+
+        if (slot <= wareHouse.getMaxCapacity()) {
+
+            wareHouse.setCurrentCapacity(slot);
+            order.setWareHouses(wareHouse);
+            order.setOrderStatus(OrderStatus.BOOKING);
+
+            orderRepository.save(order);
+            wareHouseRepository.save(wareHouse);
+
+            return true;
+        }
+        return false;
     }
 }
+

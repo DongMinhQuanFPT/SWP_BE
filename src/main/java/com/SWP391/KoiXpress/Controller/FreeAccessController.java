@@ -77,12 +77,16 @@ public class FreeAccessController {
             double[] startCoords = geoCodingService.geocoding(startLocation);
             double[] endCoords = geoCodingService.geocoding(endLocation);
 
+            if (startCoords == null || endCoords == null || startCoords[1] < 2 || endCoords[1] < 2 ) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid start or end location.");
+            }
+
             String route = routingService.getFormattedRoute(startCoords[0], startCoords[1], endCoords[0], endCoords[1]);
             return ResponseEntity.ok(route);
-        } catch (Exception e) {
-            e.printStackTrace();
+        }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error calculating route: " + e.getMessage());
         }
+
     }
     /////////////////////////////////////////////////////////
 

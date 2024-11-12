@@ -1,6 +1,5 @@
 package com.SWP391.KoiXpress.Model.response.Blog;
 
-import com.SWP391.KoiXpress.Entity.Users;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,8 +17,5 @@ public class UpdateBlogResponse {
     String img;
 
     String post;
-
-    boolean isDeleted =false;
-
-    Users users;
 }
+

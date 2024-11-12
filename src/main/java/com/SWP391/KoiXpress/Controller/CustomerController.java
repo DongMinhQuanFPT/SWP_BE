@@ -4,12 +4,10 @@ import com.SWP391.KoiXpress.Entity.Blogs;
 import com.SWP391.KoiXpress.Model.request.Blog.CreateBlogRequest;
 import com.SWP391.KoiXpress.Model.request.Order.CreateOrderRequest;
 import com.SWP391.KoiXpress.Model.response.Blog.CreateBlogResponse;
-import com.SWP391.KoiXpress.Model.response.Blog.DeleteBlogResponse;
 import com.SWP391.KoiXpress.Model.response.Blog.UpdateBlogResponse;
 import com.SWP391.KoiXpress.Model.response.Order.AllOrderByCurrentResponse;
 import com.SWP391.KoiXpress.Model.response.Order.CreateOrderResponse;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
-import com.SWP391.KoiXpress.Model.response.User.DeleteUserByUserResponse;
 import com.SWP391.KoiXpress.Model.response.User.EachUserResponse;
 import com.SWP391.KoiXpress.Service.BlogService;
 import com.SWP391.KoiXpress.Service.OrderService;
@@ -20,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/customer")
@@ -50,9 +46,9 @@ public class CustomerController {
 
     //////////////////////Delete-User///////////////////////////
     @DeleteMapping("/{userId}")
-    public ResponseEntity<DeleteUserByUserResponse> deleteUser(@PathVariable long userId) {
-        DeleteUserByUserResponse deleteUserByUserResponse = userService.deleteByUser(userId);
-        return ResponseEntity.ok(deleteUserByUserResponse);
+    public ResponseEntity<String> deleteUser(@PathVariable long userId) {
+        userService.deleteByUser(userId);
+        return ResponseEntity.ok("Delete successfully");
     }
     ///////////////////////////////////////////////////////////
 
@@ -68,9 +64,9 @@ public class CustomerController {
 
     //////////////////////Delete-Blog///////////////////////////
     @DeleteMapping("/blog/{blogId}")
-    public ResponseEntity<DeleteBlogResponse> deleteBlog(@PathVariable long blogId) {
-        DeleteBlogResponse deleteBlog = blogService.delete(blogId);
-        return ResponseEntity.ok(deleteBlog);
+    public ResponseEntity<String> deleteBlog(@PathVariable long blogId) {
+        blogService.delete(blogId);
+        return ResponseEntity.ok("Delete successfully");
     }
     ////////////////////////////////////////////////////////////
 

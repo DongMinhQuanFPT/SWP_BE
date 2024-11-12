@@ -8,12 +8,14 @@ public enum OrderStatus {
 
     //role sale staff
     ACCEPTED,
-
     REJECTED,
 
     //don can duoc thanh toan
     AWAITING_PAYMENT,
     PAID,
+
+    //sale-staff book slot warehouse trc khi van chuyen
+    BOOKING,
 
     //huy don khi co su co
     CANCELED,

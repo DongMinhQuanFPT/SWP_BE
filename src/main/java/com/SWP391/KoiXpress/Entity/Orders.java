@@ -4,7 +4,6 @@ import com.SWP391.KoiXpress.Entity.Enum.DescribeOrder;
 import com.SWP391.KoiXpress.Entity.Enum.MethodTransPort;
 import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
 import com.SWP391.KoiXpress.Exception.OrderException;
-import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -95,18 +94,23 @@ public class Orders {
     @EqualsAndHashCode.Exclude
     List<Progresses> progresses;
 
-    @ManyToOne
-    @JoinColumn(name = "report_id")
-    Reports reports;
-
     @OneToMany(mappedBy = "orders",cascade = CascadeType.ALL)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     List<FeedBacks> feedBacks;
 
     @OneToOne(mappedBy = "orders")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     Payments payments;
 
+//    @ManyToOne
+//    @JoinColumn(name = "vehicle_id")
+//    Vehicles vehicles;
+
+    @ManyToOne
+    @JoinColumn(name = "warehouse_id")
+    WareHouses wareHouses;
 
     public double calculatePrice(){
         if(methodTransPort!=null){

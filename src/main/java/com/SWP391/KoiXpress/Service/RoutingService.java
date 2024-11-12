@@ -4,10 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +14,7 @@ public class RoutingService {
 
     @Autowired
     private RestTemplate restTemplate;
+
     @Autowired
     GeoCodingService geoCodingService;
 
@@ -31,7 +30,8 @@ public class RoutingService {
             if (response.getStatusCode().is2xxSuccessful()) {
                 Map<String, Object> responseBody = response.getBody();
                 assert responseBody != null;
-                return formatRouteResponse(responseBody);
+
+                return formatRouteResponse(responseBody,lat1,lon1,lat2,lon2);
             } else {
                 return "Error: Unable to fetch the route.";
             }
@@ -41,7 +41,7 @@ public class RoutingService {
         }
     }
 
-    private String formatRouteResponse(Map<String, Object> responseBody) {
+    private String formatRouteResponse(Map<String, Object> responseBody,double lat1,double lon1, double lat2, double lon2) {
         List<Map<String, Object>> paths = (List<Map<String, Object>>) responseBody.get("paths");
 
         if (paths != null && !paths.isEmpty()) {
@@ -53,7 +53,9 @@ public class RoutingService {
 
             StringBuilder formattedResponse = new StringBuilder();
             formattedResponse.append("Total Distance: ").append(distance / 1000).append(" km\n");
-            formattedResponse.append("Total Time: ").append(formatTime(timeInMillis)).append("\n\n");
+            formattedResponse.append("Total Time: ").append(formatTime(timeInMillis)).append("\n");
+            formattedResponse.append("Start Location: ").append(lat1).append(", ").append(lon1).append("\n");
+            formattedResponse.append("End Location: ").append(lat2).append(", ").append(lon2).append("\n\n");
             formattedResponse.append("Instructions:\n");
 
             for (Map<String, Object> instruction : instructions) {

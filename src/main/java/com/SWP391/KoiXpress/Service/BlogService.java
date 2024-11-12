@@ -6,7 +6,6 @@ import com.SWP391.KoiXpress.Exception.EntityNotFoundException;
 import com.SWP391.KoiXpress.Model.request.Blog.CreateBlogRequest;
 import com.SWP391.KoiXpress.Model.response.Blog.AllBlogResponse;
 import com.SWP391.KoiXpress.Model.response.Blog.CreateBlogResponse;
-import com.SWP391.KoiXpress.Model.response.Blog.DeleteBlogResponse;
 import com.SWP391.KoiXpress.Model.response.Blog.UpdateBlogResponse;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Model.response.User.EachUserResponse;
@@ -70,11 +69,10 @@ public class BlogService {
         return new PagedResponse<>(allBlogResponses,page, size, blogsPage.getTotalElements(), blogsPage.getTotalPages(),blogsPage.isLast());
     }
 
-    public DeleteBlogResponse delete(long blogId) {
+    public void delete(long blogId) {
         Blogs blogs = getBlogById(blogId);
         blogs.setDeleted(true);
         blogRepository.save(blogs);
-        return modelMapper.map(blogs, DeleteBlogResponse.class);
     }
 
     public UpdateBlogResponse update(long blogId, Blogs blogs) {

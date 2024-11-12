@@ -1,6 +1,6 @@
-package com.SWP391.KoiXpress.Model.response.Box;
+package com.SWP391.KoiXpress.Model.request.Vehicle;
 
-import com.SWP391.KoiXpress.Entity.BoxDetails;
+import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,21 +8,18 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.NumberFormat;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CreateBoxDetailResponse {
+public class CreateVehicleRequest {
 
-    List<BoxDetails> boxDetails;
+    @Min(value = 1, message = "quantity vehicle at least 1")
+    int quantityVehicle;
 
+    @Min(value = 500, message = "Volume not least than 500")
     @NumberFormat(pattern = "#.##")
-    double totalPrice;
+    double volume;
 
-    @NumberFormat(pattern = "#.##")
-    double totalVolume;
-
-    int totalCount;
+    long wareHouseId;
 }

@@ -1,6 +1,7 @@
 package com.SWP391.KoiXpress.Repository;
 
 import com.SWP391.KoiXpress.Entity.Enum.OrderStatus;
+import com.SWP391.KoiXpress.Entity.Enum.ProgressStatus;
 import com.SWP391.KoiXpress.Entity.Orders;
 import com.SWP391.KoiXpress.Entity.Users;
 import org.springframework.data.domain.Page;
@@ -90,5 +91,9 @@ public interface OrderRepository extends JpaRepository<Orders,Long> {
             "FROM Orders o WHERE o.orderStatus = 'DELIVERED' " +
             "GROUP BY FUNCTION('YEAR', o.orderDate) ORDER BY FUNCTION('YEAR', o.orderDate) ASC")
     List<Map<String, Object>> getOrderPricesByYear();
+
+    @Query("SELECT o FROM Orders o JOIN o.progresses p WHERE p.wareHouses.id = :warehouseId AND p.progressStatus = :progressStatus")
+    List<Orders> findOrdersByWareHouseIdAndStatus(long warehouseId, ProgressStatus progressStatus);
+
 }
 

@@ -13,6 +13,7 @@ import com.SWP391.KoiXpress.Model.response.Box.CreateBoxDetailResponse;
 import com.SWP391.KoiXpress.Model.response.Order.*;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Model.response.Progress.ProgressResponse;
+import com.SWP391.KoiXpress.Model.response.Transaction.AllTransactionResponse;
 import com.SWP391.KoiXpress.Model.response.User.UserResponse;
 import com.SWP391.KoiXpress.Repository.*;
 import org.modelmapper.ModelMapper;
@@ -78,7 +79,10 @@ public class OrderService {
     @Autowired
     ProgressService progressService;
 
-    // Create
+    @Autowired
+    TransactionRepository transactionRepository;
+
+
     public CreateOrderResponse create(CreateOrderRequest createOrderRequest) throws Exception {
         Users users = authenticationService.getCurrentUser();
         Orders orders = new Orders();
@@ -146,12 +150,12 @@ public class OrderService {
             orderDetail.setHealthFishStatus(HealthFishStatus.HEALTHY);
 
             orderDetailRepository.save(orderDetail);
-            CreateBoxDetailResponse boxDetails = boxDetailService.createBox(fishSizeQuantityMap, orderDetail);
-
-            orderDetail.setBoxDetails(boxDetails.getBoxDetails());
-            orderDetail.setPrice(boxDetails.getTotalPrice());
-            orderDetail.setTotalBox(boxDetails.getTotalCount());
-            orderDetail.setTotalVolume(boxDetails.getTotalVolume());
+            CreateBoxDetailResponse response = boxDetailService.createBox(fishSizeQuantityMap, orderDetail);
+            BoxDetails boxDetails = modelMapper.map(response, BoxDetails.class);
+            orderDetail.setBoxDetails(boxDetails.getBoxes().getBoxDetails());
+            orderDetail.setPrice(response.getTotalPrice());
+            orderDetail.setTotalBox(response.getTotalCount());
+            orderDetail.setTotalVolume(response.getTotalVolume());
 
             orderDetails.add(orderDetail);
 
@@ -289,6 +293,15 @@ public class OrderService {
     }
 
 
+    public List<AllTransactionResponse> getAllTransaction(){
+        List<Transactions> transactions = transactionRepository.findAll();
+        return transactions
+                .stream()
+                .map(transaction -> modelMapper.map(transaction, AllTransactionResponse.class))
+                .toList();
+    }
+
+
     private String generateHMAC(String secretKey, String signData) throws NoSuchAlgorithmException, InvalidKeyException {
         Mac hmacSha512 = Mac.getInstance("HmacSHA512");
         SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
@@ -349,11 +362,9 @@ public class OrderService {
         Page<Orders> orders = orderRepository.findOrdersByUsersAndStatus(currentUser, OrderStatus.DELIVERED, pageRequest);
 
         List<AllOrderByCurrentResponse> responses = orders.stream()
-                .filter(order -> order.getOrderStatus() == OrderStatus.DELIVERED)
                 .map(order -> {
                     AllOrderByCurrentResponse response = modelMapper.map(order, AllOrderByCurrentResponse.class);
                     List<ProgressResponse> progresses = progressService.trackingOrder(order.getTrackingOrder());
-
                     if (progresses == null) {
                         progresses = new ArrayList<>();
                     }
@@ -379,7 +390,7 @@ public class OrderService {
         );
     }
 
-    // Sale update
+
     public UpdateOrderResponse updateBySale(long id, UpdateOrderRequest updateOrderRequest) {
         Orders oldOrders = getOrderById(id);
         if (oldOrders.getOrderStatus() == OrderStatus.PENDING) {
@@ -399,22 +410,16 @@ public class OrderService {
         }
     }
 
-    // Delivery update
+
     public UpdateOrderResponse updateOrderByDelivery(long id, UpdateOrderRequest updateOrderRequest) {
-        return orderRepository.findById(id)
+        Orders orders = orderRepository.findById(id)
                 .filter(order -> order.getOrderStatus() == OrderStatus.PAID)
-                .map(order -> {
-                    order.setOrderStatus(updateOrderRequest.getOrderStatus());
-                    Orders updatedOrder = orderRepository.save(order);
-
-
-                    return modelMapper.map(updatedOrder, UpdateOrderResponse.class);
-                })
                 .orElseThrow(() -> new OrderException("Cannot update"));
+        orders.setOrderStatus(updateOrderRequest.getOrderStatus());
+        Orders updatedOrder = orderRepository.save(orders);
+        return modelMapper.map(updatedOrder, UpdateOrderResponse.class);
     }
 
-
-    //list nhung order dang pending
     public PagedResponse<AllOrderResponse> getListOrderPending(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.PENDING, pageRequest);
@@ -437,6 +442,7 @@ public class OrderService {
                 ordersPage.isLast()
         );
     }
+
 
     public PagedResponse<AllOrderResponse> getListOrderAwaitingPayment(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -461,6 +467,7 @@ public class OrderService {
         );
     }
 
+
     public PagedResponse<AllOrderResponse> getListOrderPaid(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.PAID, pageRequest);
@@ -483,6 +490,7 @@ public class OrderService {
                 ordersPage.isLast()
         );
     }
+
 
     public PagedResponse<AllOrderResponse> getListOrderRejected(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -507,6 +515,7 @@ public class OrderService {
         );
     }
 
+
     public PagedResponse<AllOrderResponse> getListOrderShipping(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.SHIPPING, pageRequest);
@@ -529,6 +538,7 @@ public class OrderService {
                 ordersPage.isLast()
         );
     }
+
 
     public PagedResponse<AllOrderResponse> getListOrderDelivered(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -575,18 +585,15 @@ public class OrderService {
                 ordersPage.isLast()
         );
     }
-    //
 
-    //Delete
 
-    public DeleteOrderResponse delete(long id) {
+    public void delete(long id) {
         Orders oldOrders = getOrderById(id);
         if (oldOrders.getOrderStatus() == OrderStatus.DELIVERED) {
             throw new OrderException("Order are delivered, can not delete");
         }
         oldOrders.setOrderStatus(OrderStatus.CANCELED);
         orderRepository.save(oldOrders);
-        return modelMapper.map(oldOrders, DeleteOrderResponse.class);
     }
 
 
@@ -606,6 +613,7 @@ public class OrderService {
         }
         return modelMapper.map(orders, CreateOrderResponse.class);
     }
+
 
     public PagedResponse<AllOrderResponse> getAll(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -630,7 +638,6 @@ public class OrderService {
                 ordersPage.isLast()
         );
     }
-
 
 
     private double extractDistance(String routeInfo) {
