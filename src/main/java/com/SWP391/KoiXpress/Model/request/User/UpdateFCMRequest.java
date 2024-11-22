@@ -1,4 +1,4 @@
-package com.SWP391.KoiXpress.Model.response.WareHouse;
+package com.SWP391.KoiXpress.Model.request.User;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -7,17 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AllWareHouseResponse {
-    long id;
+public class UpdateFCMRequest {
 
-    String location;
-
-    int maxCapacity;
-
-    int currentCapacity;
-
-    int bookingCapacity;
+    String fcmToken;
 }

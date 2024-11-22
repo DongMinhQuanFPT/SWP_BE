@@ -1,4 +1,4 @@
-package com.SWP391.KoiXpress.Model.response.WareHouse;
+package com.SWP391.KoiXpress.Model.response.Notification;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -7,17 +7,14 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AllWareHouseResponse {
-    long id;
+public class NotificationKoiFishDeli {
 
-    String location;
+    String title;
 
-    int maxCapacity;
+    String message;
 
-    int currentCapacity;
-
-    int bookingCapacity;
+    String fcmToken;
 }

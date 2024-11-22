@@ -34,6 +34,8 @@ public class AllOrderResponse {
 
     String destinationLocation;
 
+    String nearWareHouse;
+
     double totalPrice;
 
     int totalQuantity;

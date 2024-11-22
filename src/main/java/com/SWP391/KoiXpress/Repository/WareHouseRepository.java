@@ -10,11 +10,14 @@ import java.util.List;
 public interface WareHouseRepository extends JpaRepository<WareHouses, Long> {
     WareHouses findWaresHouseById(long id);
 
-    @Query("SELECT w.location FROM WareHouses w")
-    List<String> findAllLocation();
+    @Query("SELECT w.location FROM WareHouses w WHERE w.isAvailable = true")
+    List<String> findAllAvailableLocations();
+
+    @Query("SELECT w.location FROM WareHouses w WHERE w.isAvailable = true AND w.id <> :wareHouseId")
+    List<String> findAllAvailableLocationsExcludingCurrent(long wareHouseId);
+
 
     WareHouses findWareHousesByLocation(String nearWareHouse);
-
 
     List<WareHouses> findByIsAvailableTrue();
 

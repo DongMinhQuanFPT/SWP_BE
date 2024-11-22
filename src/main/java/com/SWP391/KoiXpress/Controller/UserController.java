@@ -41,4 +41,11 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
     //////////////////////////////////////////////////////////////////////
+
+//    @PatchMapping("/fcmToken")
+//    public ResponseEntity<EachUserResponse> updateFCM(@RequestBody UpdateFCMRequest request){
+//        EachUserResponse user = userService.updateFCMToken(request);
+//        return ResponseEntity.ok(user);
+//    }
+
 }

@@ -13,6 +13,7 @@ import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
 import com.SWP391.KoiXpress.Model.response.WareHouse.AllWareHouseResponse;
 import com.SWP391.KoiXpress.Model.response.WareHouse.CreateWarehouseResponse;
 import com.SWP391.KoiXpress.Model.response.User.*;
+import com.SWP391.KoiXpress.Model.response.WareHouse.UpdateWareHouseRequest;
 import com.SWP391.KoiXpress.Service.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -178,11 +179,15 @@ public class ManagerController {
     }
     ////////////////////////////////////////////////////////////////
 
-
+    @PutMapping("/wareHouse/{id}")
+    public ResponseEntity<?> updateWareHouse(@RequestBody UpdateWareHouseRequest updateWareHouseRequest){
+        wareHouseService.update(updateWareHouseRequest);
+        return ResponseEntity.ok("update success");
+    }
 
     //////////////////////Delete-WareHouse///////////////////////////
     @DeleteMapping("/wareHouse/{id}")
-    public ResponseEntity<String> deleteWareHouse(@PathVariable long id) {
+    public ResponseEntity<String> deleteWareHouse(@PathVariable long id) throws Exception {
         boolean capacity = wareHouseService.delete(id);
         if(capacity){
             return ResponseEntity.ok("Delete success");

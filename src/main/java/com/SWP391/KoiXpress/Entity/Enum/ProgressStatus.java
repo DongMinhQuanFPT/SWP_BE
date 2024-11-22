@@ -1,6 +1,7 @@
 package com.SWP391.KoiXpress.Entity.Enum;
 
 public enum ProgressStatus {
+
     ON_SITE,
 
     FISH_CHECKED,
@@ -12,4 +13,5 @@ public enum ProgressStatus {
     EN_ROUTE,
 
     HANDED_OVER
+
 }

@@ -75,6 +75,8 @@ public class Users implements UserDetails {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     boolean isDeleted = false;
 
+    String fcmToken;
+
     @OneToMany(mappedBy = "users")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

@@ -11,7 +11,6 @@ import com.SWP391.KoiXpress.Model.response.Progress.ProgressResponse;
 import com.SWP391.KoiXpress.Model.response.Progress.UpdateProgressResponse;
 import com.SWP391.KoiXpress.Repository.OrderRepository;
 import com.SWP391.KoiXpress.Repository.ProgressRepository;
-import com.SWP391.KoiXpress.Repository.UserRepository;
 import com.SWP391.KoiXpress.Repository.WareHouseRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +33,6 @@ public class ProgressService {
 
     @Autowired
     WareHouseRepository wareHouseRepository;
-
-    @Autowired
-    UserRepository userRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -114,6 +110,11 @@ public class ProgressService {
 
         // Handle different progress statuses
         switch (updateProgressRequest.getProgressStatus()) {
+
+            case CANCELED:
+                handleCanceledProgress(orders, wareHouses);
+                break;
+
             case ON_SITE:
                 handleOnSiteProgress(oldProgresses, orders);
                 break;
@@ -165,6 +166,9 @@ public class ProgressService {
         progress.setFrom_Location(order.getOriginLocation());
         progress.setTo_Location(warehouse.getLocation());
         progress.setVehicleType(VehicleType.TRANSPORT_TO_WAREHOUSE);
+        warehouse.setCurrentCapacity(warehouse.getCurrentCapacity() + order.getTotalBox());
+        warehouse.setBookingCapacity(warehouse.getBookingCapacity()-order.getTotalBox());
+        wareHouseRepository.save(warehouse);
         progress.setWareHouses(warehouse);
     }
 
@@ -175,13 +179,32 @@ public class ProgressService {
         progress.setDelivery_phone(delivery.getPhone());
         progress.setVehicleType(VehicleType.DELIVERY_TO_RECEIVER);
         warehouse.setCurrentCapacity(warehouse.getCurrentCapacity() - order.getTotalBox());
-        progress.setWareHouses(warehouse);
         wareHouseRepository.save(warehouse);
     }
 
     private void handleHandedOverProgress(Orders order) {
         order.setOrderStatus(OrderStatus.DELIVERED);
         sendThankYouEmail(order);
+    }
+
+    private void handleCanceledProgress(Orders orders,WareHouses wareHouses){
+        List<Progresses> responseProgress = progressRepository.findProgressesByOrdersId(orders.getId())
+                .orElseThrow(() -> new ProgressException("Progress not created yet"));
+        Progresses latestProgress = responseProgress.stream()
+                .max(Comparator.comparing(Progresses::getDateProgress))
+                .orElseThrow(() -> new ProgressException("No valid progress found"));
+        if(latestProgress.getProgressStatus() == ProgressStatus.ON_SITE 
+                || latestProgress.getProgressStatus() == ProgressStatus.FISH_CHECKED){
+            wareHouses.setBookingCapacity(wareHouses.getBookingCapacity() - orders.getTotalBox());
+            wareHouseRepository.save(wareHouses);
+        } else if (latestProgress.getProgressStatus() == ProgressStatus.WAREHOUSING
+                || latestProgress.getProgressStatus() == ProgressStatus.EN_ROUTE) {
+            wareHouses.setCurrentCapacity(wareHouses.getCurrentCapacity() - orders.getTotalBox());
+            wareHouseRepository.save(wareHouses);
+        }else{
+            throw new ProgressException("Can not update");
+        }
+
     }
 
     private void sendThankYouEmail(Orders order) {
@@ -199,9 +222,10 @@ public class ProgressService {
         progresses.setProgressStatus(ProgressStatus.CANCELED);
         progresses.setFailure_reason(reason.getReason());
         progresses.getOrders().setOrderStatus(OrderStatus.CANCELED);
+        WareHouses wareHouses = wareHouseRepository.findWareHousesByLocation(progresses.getOrders().getNearWareHouse());
+        wareHouses.setCurrentCapacity(wareHouses.getCurrentCapacity() - progresses.getOrders().getTotalBox());
+        wareHouseRepository.save(wareHouses);
         progressRepository.save(progresses);
     }
-
-
 
 }

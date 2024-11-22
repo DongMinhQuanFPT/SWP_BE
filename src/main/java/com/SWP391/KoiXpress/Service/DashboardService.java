@@ -8,22 +8,25 @@ import com.SWP391.KoiXpress.Entity.Users;
 import com.SWP391.KoiXpress.Model.response.Order.AllOrderResponse;
 import com.SWP391.KoiXpress.Model.response.User.EachUserResponse;
 import com.SWP391.KoiXpress.Repository.*;
+
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
+import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.LineSeparator;
+import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
-import java.io.ByteArrayOutputStream;
+
 
 @Service
 public class DashboardService {

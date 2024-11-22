@@ -6,6 +6,7 @@ import com.SWP391.KoiXpress.Model.request.Order.UpdateOrderRequest;
 import com.SWP391.KoiXpress.Model.response.Order.UpdateOrderResponse;
 import com.SWP391.KoiXpress.Model.response.User.EachUserResponse;
 import com.SWP391.KoiXpress.Model.response.WareHouse.AllWareHouseResponse;
+import com.SWP391.KoiXpress.Model.response.WareHouse.WareHouseContainOrderResponse;
 import com.SWP391.KoiXpress.Service.OrderService;
 import com.SWP391.KoiXpress.Service.UserService;
 import com.SWP391.KoiXpress.Service.WareHouseService;
@@ -94,6 +95,42 @@ public class SaleStaffController {
     @GetMapping("/wareHouse/available")
     public ResponseEntity<List<AllWareHouseResponse>> getAllWareHouseAvailable() {
         return ResponseEntity.ok(wareHouseService.getAllWareHouseAvailable());
+    }
+    ///////////////////////////////////////////////////////////////////////////
+
+
+
+    ////////////////////Get-List-Order-In-WareHouse///////////////////////////
+    @GetMapping("/wareHouseContainOrder")
+    public ResponseEntity<?> getListOrderInWareHouse(long wareHouseId){
+        WareHouseContainOrderResponse orderResponse = wareHouseService.getListOrderInWareHouse(wareHouseId);
+        if(orderResponse.getOrders()==null){
+            return ResponseEntity.ok("Not found order in WareHouse: "+ orderResponse.getLocationWareHouse());
+        }
+        return ResponseEntity.ok(orderResponse);
+    }
+    ///////////////////////////////////////////////////////////////////////////
+
+
+
+    /////////////Get-List-OrderBooking-In-WareHouse////////////////////////
+    @GetMapping("/wareHouseContainBookingOrder")
+    public ResponseEntity<?> getListOrderBookingInWareHouse(long wareHouseId) {
+        WareHouseContainOrderResponse orderResponse = wareHouseService.getListOrderBookingInWareHouse(wareHouseId);
+        if (orderResponse.getOrders() == null) {
+            return ResponseEntity.ok("Not found booking order in WareHouse: " + orderResponse.getLocationWareHouse());
+        }
+        return ResponseEntity.ok(orderResponse);
+    }
+    ///////////////////////////////////////////////////////////////////////////
+
+
+
+    //////////////////Suggest-WareHouse////////////////////////////////////////
+    @GetMapping("/suggestWareHouse")
+    public ResponseEntity<String> suggestWareHouse(long orderId){
+        String wareHouse = wareHouseService.suggestWareHouse(orderId);
+        return ResponseEntity.ok("You should choose Warehouse:"+ wareHouse);
     }
     ///////////////////////////////////////////////////////////////////////////
 }

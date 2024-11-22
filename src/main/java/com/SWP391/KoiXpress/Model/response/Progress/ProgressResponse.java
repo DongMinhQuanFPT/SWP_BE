@@ -25,7 +25,7 @@ public class ProgressResponse {
 
     String image;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     Date dateProgress;
 
     boolean isInProgress;
