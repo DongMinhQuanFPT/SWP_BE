@@ -7,7 +7,6 @@ import com.SWP391.KoiXpress.Entity.Enum.EmailStatus;
 import com.SWP391.KoiXpress.Entity.Enum.Role;
 import com.SWP391.KoiXpress.Entity.Users;
 import com.SWP391.KoiXpress.Exception.DuplicateEntity;
-import com.SWP391.KoiXpress.Exception.EmailNotVerifiedException;
 import com.SWP391.KoiXpress.Exception.EntityNotFoundException;
 import com.SWP391.KoiXpress.Exception.NotFoundException;
 
@@ -63,11 +62,9 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     AuthenticationRepository authenticationRepository;
 
-
-    @Trimmed
+//    @Trimmed
     public CreateUserByManagerResponse register(RegisterRequest registerRequest) {
         Users users = modelMapper.map(registerRequest, Users.class);
-
         try {
             String originPassword = users.getPassword();
             users.setPassword(passwordEncoder.encode(originPassword));
@@ -97,7 +94,7 @@ public class AuthenticationService implements UserDetailsService {
         }
     }
 
-    @Trimmed
+//    @Trimmed
     public LoginResponse login(LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -109,12 +106,13 @@ public class AuthenticationService implements UserDetailsService {
             loginResponse.setToken(tokenService.generateToken(users));
             return loginResponse;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BadCredentialsException("UserName or password invalid!");
         }
 
     }
 
-    @Trimmed
+//    @Trimmed
     public void forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
         Users users = userRepository.findUsersByEmail(forgotPasswordRequest.getEmail());
         if (users == null) {
@@ -130,7 +128,7 @@ public class AuthenticationService implements UserDetailsService {
 
     }
 
-    @Trimmed
+//    @Trimmed
     public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
         Users users = getCurrentUser();
         users.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));

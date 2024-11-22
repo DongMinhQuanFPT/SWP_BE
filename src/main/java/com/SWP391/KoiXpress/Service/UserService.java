@@ -7,6 +7,7 @@ import com.SWP391.KoiXpress.Entity.Users;
 import com.SWP391.KoiXpress.Exception.*;
 import com.SWP391.KoiXpress.Model.request.User.CreateUserByManagerRequest;
 import com.SWP391.KoiXpress.Model.request.User.UpdateCustomerRequest;
+import com.SWP391.KoiXpress.Model.request.User.UpdateFCMRequest;
 import com.SWP391.KoiXpress.Model.request.User.UpdateUserByManagerRequest;
 import com.SWP391.KoiXpress.Model.response.Authen.LoginResponse;
 import com.SWP391.KoiXpress.Model.response.Paging.PagedResponse;
@@ -224,5 +225,12 @@ public class UserService {
             throw new EntityNotFoundException("User not found!");
         }
         return oldUsers;
+    }
+
+    public EachUserResponse updateFCMToken(UpdateFCMRequest request){
+        Users users = authenticationService.getCurrentUser();
+        users.setFcmToken(request.getFcmToken());
+        userRepository.save(users);
+        return modelMapper.map(users, EachUserResponse.class);
     }
 }

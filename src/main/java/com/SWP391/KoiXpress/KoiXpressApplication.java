@@ -15,13 +15,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class KoiXpressApplication {
 
-	/*
-	 * POST: Create
-	 * PUT: Update
-	 * GET: get
-	 * DELETE: remove
-	 * */
-
 	public static void main(String[] args) {
 		SpringApplication.run(KoiXpressApplication.class, args);
 	}

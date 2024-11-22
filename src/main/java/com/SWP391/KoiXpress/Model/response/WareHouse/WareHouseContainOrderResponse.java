@@ -1,23 +1,26 @@
 package com.SWP391.KoiXpress.Model.response.WareHouse;
 
+import com.SWP391.KoiXpress.Model.response.Order.AllOrderResponse;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AllWareHouseResponse {
-    long id;
+public class WareHouseContainOrderResponse {
 
-    String location;
+    String locationWareHouse;
 
-    int maxCapacity;
+    int totalBox;
 
-    int currentCapacity;
+    String description;
 
-    int bookingCapacity;
+    Set<AllOrderResponse> orders;
+
 }

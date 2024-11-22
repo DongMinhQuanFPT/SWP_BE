@@ -18,7 +18,6 @@ import com.SWP391.KoiXpress.Model.response.Progress.ProgressResponse;
 import com.SWP391.KoiXpress.Model.response.Transaction.AllTransactionResponse;
 import com.SWP391.KoiXpress.Model.response.User.UserResponse;
 import com.SWP391.KoiXpress.Repository.*;
-import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -88,7 +87,6 @@ public class OrderService {
     @Autowired
     ProgressRepository progressRepository;
 
-
     public CreateOrderResponse create(CreateOrderRequest createOrderRequest) throws Exception {
         Users users = authenticationService.getCurrentUser();
         Orders orders = new Orders();
@@ -108,20 +106,20 @@ public class OrderService {
         String originLocation = createOrderRequest.getOriginLocation();
 
         double[] originCoords = geoCodingService.geocoding(originLocation);
-        double[] destination = geoCodingService.geocoding(destinationLocation);
+        double[] destinationCoords = geoCodingService.geocoding(destinationLocation);
 
-        String routeOD = routingService.getFormattedRoute(originCoords[0], originCoords[1], destination[0], destination[1]);
-        double distanceOD = extractDistance(routeOD);
-        orders.setTotalDistance(distanceOD);
+        String route = routingService.getDistanceFormattedRoute(originCoords[0], originCoords[1], destinationCoords[0], destinationCoords[1]);
+        double totalDistance = routingService.extractDistance(route);
+        orders.setTotalDistance(totalDistance);
 
         //
-        List<String> wareHouseRepositoryAllLocation = wareHouseRepository.findAllLocation();
+        List<String> wareHouseRepositoryAllLocation = wareHouseRepository.findAllAvailableLocations();
         double minDistance = Double.MAX_VALUE;
         String nearestWareHouse = null;
         for (String wareHouse : wareHouseRepositoryAllLocation) {
             double[] wareHouseCoords = geoCodingService.geocoding(wareHouse);
-            String routeInfo = routingService.getFormattedRoute(originCoords[0], originCoords[1], wareHouseCoords[0], wareHouseCoords[1]);
-            double distance = extractDistance(routeInfo);
+            String routeInfo = routingService.getDistanceFormattedRoute(originCoords[0], originCoords[1], wareHouseCoords[0], wareHouseCoords[1]);
+            double distance = routingService.extractDistance(routeInfo);
 
             if (distance < minDistance && distance != -1) {
                 minDistance = distance; // Cập nhật khoảng cách nhỏ nhất
@@ -185,7 +183,6 @@ public class OrderService {
         return modelMapper.map(orders, CreateOrderResponse.class);
     }
 
-
     public String orderPaymentUrl(long orderId) throws Exception {
         Orders orders = orderRepository.findOrdersById(orderId);
         if (orders.getOrderStatus() == OrderStatus.AWAITING_PAYMENT) {
@@ -198,7 +195,7 @@ public class OrderService {
             String amount = String.valueOf((int) totalPrice);
 
             String tmnCode = "U3CV658K";
-            String secretKey = "O061SWJB8ISCTPWUPLZG152JU6MT1EVU";
+            String secretKey = "G6O2N8KWLPP93KY4E6TZHB99Q0AJUTRG";
             String vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
             String returnUrl = "http://transportkoifish.online/success?orderID=" + orders.getId();
             String currCode = "VND";
@@ -247,7 +244,7 @@ public class OrderService {
         throw new OrderException("Order can not payment yet");
     }
 
-    public void createTransactions(long orderId){
+    public void createTransactionsPaymentSuccess(long orderId){
         Orders orders = orderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException("Can not found order"));
 
@@ -267,16 +264,16 @@ public class OrderService {
         Set<Transactions> setTransaction = new HashSet<>();
 
         //Customer transaction
-        Transactions transactionVNPAYtoCUSTOMER = new Transactions();
+        Transactions transactionCustomerRewardPoints = new Transactions();
         Users customer = authenticationService.getCurrentUser();
-        transactionVNPAYtoCUSTOMER.setFrom(null);
-        transactionVNPAYtoCUSTOMER.setTo(customer);
-        transactionVNPAYtoCUSTOMER.setPayments(payments);
-        transactionVNPAYtoCUSTOMER.setTransactionStatus(TransactionStatus.SUCCESS);
-        transactionVNPAYtoCUSTOMER.setDescription("VNPAY to Customer");
+        transactionCustomerRewardPoints.setFrom(null);
+        transactionCustomerRewardPoints.setTo(customer);
+        transactionCustomerRewardPoints.setPayments(payments);
+        transactionCustomerRewardPoints.setTransactionStatus(TransactionStatus.SUCCESS);
+        transactionCustomerRewardPoints.setDescription("Customer reward points");
         long newPoint = customer.getLoyaltyPoint() + (long)(orders.getTotalPrice()*0.00001);
         customer.setLoyaltyPoint(newPoint);
-        setTransaction.add(transactionVNPAYtoCUSTOMER);
+        setTransaction.add(transactionCustomerRewardPoints);
 
         Transactions transactionCUSTOMERtoMANAGER = new Transactions();
         Users manager = userRepository.findUsersByRoleAndIsDeleted(Role.MANAGER,false);
@@ -294,6 +291,35 @@ public class OrderService {
         orders.setOrderStatus(OrderStatus.PAID);
         orderRepository.save(orders);
         userRepository.save(manager);
+        userRepository.save(customer);
+        paymentRepository.save(payments);
+    }
+
+    public void createTransactionsRefund(long orderId){
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(()-> new NotFoundException("Can not found order"));
+        Payments payments = new Payments();
+        payments.setOrders(orders);
+        payments.setCreatePayment(new Date());
+        payments.setPaymentMethod(PaymentMethod.BANK_TRANSFER);
+
+
+        Set<Transactions> setTransaction = new HashSet<>();
+
+        Transactions transactionRefundToCustomer = new Transactions();
+        Users customer = authenticationService.getCurrentUser();
+        transactionRefundToCustomer.setFrom(null);
+        transactionRefundToCustomer.setTo(customer);
+        transactionRefundToCustomer.setPayments(payments);
+        transactionRefundToCustomer.setTransactionStatus(TransactionStatus.SUCCESS);
+        transactionRefundToCustomer.setDescription("Refund to Customer");
+        long newPoint = customer.getLoyaltyPoint() + (long)(orders.getTotalPrice()*0.00001);
+        customer.setLoyaltyPoint(newPoint);
+        setTransaction.add(transactionRefundToCustomer);
+
+        payments.setTransactions(setTransaction);
+        orders.setOrderStatus(OrderStatus.PAID);
+        orderRepository.save(orders);
         userRepository.save(customer);
         paymentRepository.save(payments);
     }
@@ -405,7 +431,6 @@ public class OrderService {
         );
     }
 
-
     public UpdateOrderResponse updateBySale(long id, UpdateOrderRequest updateOrderRequest) {
         Orders oldOrders = getOrderById(id);
         if (oldOrders.getOrderStatus() == OrderStatus.PENDING) {
@@ -414,6 +439,10 @@ public class OrderService {
 
             if (updateOrderRequest.getOrderStatus() == OrderStatus.ACCEPTED) {
                 oldOrders.setOrderStatus(OrderStatus.AWAITING_PAYMENT);
+            }
+
+            if(updateOrderRequest.getOrderStatus() == OrderStatus.REJECTED){
+                oldOrders.setFailure_reason("Sale_Staff refuse the order, due to information not correct");
             }
 
             Orders newOrders = orderRepository.save(oldOrders);
@@ -425,7 +454,6 @@ public class OrderService {
         }
     }
 
-
     public UpdateOrderResponse updateOrderByDelivery(long id, UpdateOrderRequest updateOrderRequest) {
         Orders orders = orderRepository.findById(id)
                 .filter(order -> order.getOrderStatus() == OrderStatus.BOOKING)
@@ -436,7 +464,7 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderResponse> getListOrderPending(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.PENDING, pageRequest);
 
         List<AllOrderResponse> responses = ordersPage.stream()
@@ -459,7 +487,7 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderResponse> getListOrderBooking(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.BOOKING, pageRequest);
 
         List<AllOrderResponse> responses = ordersPage.stream()
@@ -482,7 +510,7 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderResponse> getListOrderAwaitingPayment(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.AWAITING_PAYMENT, pageRequest);
 
         List<AllOrderResponse> responses = ordersPage.stream()
@@ -505,7 +533,7 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderResponse> getListOrderPaid(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.PAID, pageRequest);
 
         List<AllOrderResponse> responses = ordersPage.stream()
@@ -528,7 +556,7 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderResponse> getListOrderRejected(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.REJECTED, pageRequest);
 
         List<AllOrderResponse> responses = ordersPage.stream()
@@ -551,7 +579,7 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderResponse> getListOrderShipping(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.SHIPPING, pageRequest);
 
         List<AllOrderResponse> responses = ordersPage.stream()
@@ -574,7 +602,7 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderResponse> getListOrderDelivered(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.DELIVERED, pageRequest);
 
         List<AllOrderResponse> responses = ordersPage.stream()
@@ -597,7 +625,7 @@ public class OrderService {
     }
 
     public PagedResponse<AllOrderCanceledResponse> getListOrderCanceled(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Orders> ordersPage = orderRepository.findOrdersByOrderStatus(OrderStatus.CANCELED, pageRequest);
 
         List<AllOrderCanceledResponse> responses = ordersPage.stream()
@@ -607,7 +635,9 @@ public class OrderService {
                     List<Progresses> progresses = progressRepository.findProgressesByOrdersId(orderResponse.getId())
                             .orElseThrow(()->new ProgressException("Can not found"));
                     String reason = progresses.stream().map(Progresses::getFailure_reason).filter(Objects::nonNull).findFirst().orElse(null);
-                    orderResponse.setFailure_reason(reason);
+                    if(reason!=null){
+                        orderResponse.setFailure_reason(reason);
+                    }
                     orderResponse.setEachUserResponse(userResponse);
                     return orderResponse;
                 })
@@ -628,6 +658,7 @@ public class OrderService {
         if (oldOrders.getOrderStatus() == OrderStatus.DELIVERED) {
             throw new OrderException("Order are delivered, can not delete");
         }
+        oldOrders.setFailure_reason("Customer canceled");
         oldOrders.setOrderStatus(OrderStatus.CANCELED);
         orderRepository.save(oldOrders);
     }
@@ -670,25 +701,6 @@ public class OrderService {
                 ordersPage.getTotalPages(),
                 ordersPage.isLast()
         );
-    }
-
-    private double extractDistance(String routeInfo) {
-        String[] lines = routeInfo.split("\n");
-        String totalDistance = null;
-        for (String line : lines) {
-            if (line.startsWith("Total Distance: ")) {
-                totalDistance = line;
-                break;
-            }
-        }
-        if (totalDistance != null) {
-            String[] parts = totalDistance.split(":");
-            if (parts.length > 1) {
-                String distanceValue = parts[1].trim();
-                return Double.parseDouble(distanceValue.split(" ")[0]);
-            }
-        }
-        throw new EntityNotFoundException("Cant find distance");
     }
 
 }

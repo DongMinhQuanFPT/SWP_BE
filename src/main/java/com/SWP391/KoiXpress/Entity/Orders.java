@@ -79,6 +79,8 @@ public class Orders {
     @NotNull(message = "totalPrice can not be null")
     double totalPrice;
 
+    String failure_reason;
+
     @ManyToOne
     @JoinColumn(name="user_id")
     Users users;

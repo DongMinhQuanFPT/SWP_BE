@@ -24,12 +24,15 @@ public class BoxService {
 
     public CreateBoxResponse create(CreateBoxRequest createBoxRequest){
         Boxes boxes = new Boxes();
-        boxes.setType(createBoxRequest.getType());
-        boxes.setVolume(createBoxRequest.getVolume());
-        boxes.setPrice(createBoxRequest.getPrice());
-        boxes.setAvailable(true);
-        boxRepository.save(boxes);
-        return modelMapper.map(boxes, CreateBoxResponse.class);
+        if(boxRepository.findBoxesByType(createBoxRequest.getType())==null){
+            boxes.setType(createBoxRequest.getType());
+            boxes.setVolume(createBoxRequest.getVolume());
+            boxes.setPrice(createBoxRequest.getPrice());
+            boxes.setAvailable(true);
+            boxRepository.save(boxes);
+            return modelMapper.map(boxes, CreateBoxResponse.class);
+        }
+        throw new BoxException("Box type already create");
     }
 
     public void delete(long id){

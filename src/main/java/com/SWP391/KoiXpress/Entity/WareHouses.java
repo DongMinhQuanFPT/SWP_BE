@@ -26,17 +26,14 @@ public class WareHouses {
 
     int currentCapacity = 0;
 
+    int bookingCapacity = 0;
+
     boolean isAvailable=true;
 
     @OneToMany(mappedBy = "wareHouses")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     List<Progresses> progresses;
-
-//    @OneToMany(mappedBy = "wareHouses")
-//    @ToString.Exclude
-//    @EqualsAndHashCode.Exclude
-//    Set<Vehicles> vehiclesSet;
 
     @OneToMany(mappedBy = "wareHouses", cascade = CascadeType.ALL)
     @ToString.Exclude

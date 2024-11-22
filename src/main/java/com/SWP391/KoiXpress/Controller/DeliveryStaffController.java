@@ -73,6 +73,7 @@ public class DeliveryStaffController {
     @DeleteMapping("{progressId}")
     public ResponseEntity<String> deleteProgress(@PathVariable long progressId, DeleteProgressRequest reason){
         progressService.delete(progressId, reason);
+        simpMessagingTemplate.convertAndSend("/topic/general", "ORDER HAS BEEN CANCELED");
         return ResponseEntity.ok("Delete successfully");
     }
     ////////////////////////////////////////////////////////////////

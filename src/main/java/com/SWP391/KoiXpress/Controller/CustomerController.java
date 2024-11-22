@@ -130,7 +130,7 @@ public class CustomerController {
     //////////////////////Create-Transaction///////////////////////////
     @PostMapping("/transaction")
     public ResponseEntity<?> createTransaction(@RequestParam long orderId) {
-        orderService.createTransactions(orderId);
+        orderService.createTransactionsPaymentSuccess(orderId);
         simpMessagingTemplate.convertAndSend("/topic/general","CUSTOMER PAYMENT SUCCESS");
         return ResponseEntity.ok("Create transaction success");
     }

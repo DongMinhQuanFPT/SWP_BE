@@ -63,6 +63,8 @@ public class AllOrderByCurrentResponse {
 
     String customerNotes;
 
+    String failure_reason;
+
     MethodTransPort methodTransPort;
 
     OrderStatus orderStatus;

@@ -37,4 +37,6 @@ public class EachUserResponse {
     Role role;
 
     long loyaltyPoint;
+
+    String fcmToken;
 }

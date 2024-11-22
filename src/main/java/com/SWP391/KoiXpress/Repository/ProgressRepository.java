@@ -18,5 +18,4 @@ public interface ProgressRepository extends JpaRepository<Progresses, Long> {
     List<Progresses> findProgressesByTrackingOrderAndStatusNotNull(UUID trackingOrder);
 
     Progresses findProgressesById(long id);
-
 }
